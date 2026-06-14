@@ -72,11 +72,24 @@ struct RecordView: View {
                     .padding(.horizontal, 12)
 
                 if viewModel.draftText.isEmpty {
-                    Text(viewModel.isRecording ? "聆听中…" : "记录此刻的想法…")
-                        .foregroundStyle(.secondary)
-                        .padding(.leading, 18)
-                        .padding(.top, 8)
-                        .allowsHitTesting(false)
+                    HStack(spacing: 6) {
+                        if viewModel.isRecording {
+                            // 红色呼吸圆点 — 让「聆听中」有生命感
+                            Circle()
+                                .fill(.red)
+                                .frame(width: 8, height: 8)
+                                .phaseAnimator([1.0, 0.4]) { content, phase in
+                                    content.opacity(phase)
+                                } animation: { _ in
+                                    .easeInOut(duration: 0.7)
+                                }
+                        }
+                        Text(viewModel.isRecording ? "聆听中…" : "记录此刻的想法…")
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.leading, 18)
+                    .padding(.top, 8)
+                    .allowsHitTesting(false)
                 }
             }
 
@@ -196,10 +209,26 @@ struct RecordView: View {
             Button {
                 viewModel.toggleVoiceCapture()
             } label: {
-                Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "mic.fill")
-                    .font(.title3)
-                    .foregroundStyle(viewModel.isRecording ? .red : .primary)
-                    .frame(width: 36, height: 36)
+                ZStack {
+                    if viewModel.isRecording {
+                        // 用 PhaseAnimator 做向外扩散的脉冲（iOS 17+）
+                        Circle()
+                            .stroke(.red.opacity(0.5), lineWidth: 1.5)
+                            .frame(width: 36, height: 36)
+                            .phaseAnimator([0, 1]) { content, phase in
+                                content
+                                    .scaleEffect(1.0 + 0.6 * phase)
+                                    .opacity(1.0 - phase)
+                            } animation: { _ in
+                                .easeOut(duration: 1.2)
+                            }
+                    }
+                    Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "mic.fill")
+                        .font(.title3)
+                        .foregroundStyle(viewModel.isRecording ? .red : .primary)
+                        .frame(width: 36, height: 36)
+                        .contentTransition(.symbolEffect(.replace))
+                }
             }
 
             Button {
@@ -213,19 +242,27 @@ struct RecordView: View {
 
             Spacer()
 
+            // 保存按钮 — 高度对齐到 36，启用态平滑过渡
             Button {
                 viewModel.save(in: modelContext)
             } label: {
                 Text("保存")
-                    .font(.headline)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(.ultraThinMaterial, in: Capsule())
+                    .font(.subheadline.bold())
+                    .frame(height: 36)
+                    .padding(.horizontal, 18)
+                    .background(canSave ? AnyShapeStyle(.tint) : AnyShapeStyle(.ultraThinMaterial),
+                                in: Capsule())
+                    .foregroundStyle(canSave ? Color.white : Color.secondary)
+                    .animation(.easeInOut(duration: 0.2), value: canSave)
             }
-            .disabled(viewModel.draftText.isEmpty && viewModel.attachments.isEmpty)
+            .disabled(!canSave)
         }
         .padding()
         .background(.ultraThinMaterial)
+    }
+
+    private var canSave: Bool {
+        !viewModel.draftText.isEmpty || !viewModel.attachments.isEmpty
     }
 }
 

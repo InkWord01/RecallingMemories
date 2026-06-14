@@ -40,7 +40,7 @@ struct MemoryDetailView: View {
                 }
                 .padding()
             }
-            .navigationTitle(memory.createdAt.formatted(date: .abbreviated, time: .shortened))
+            .navigationTitle(navigationTitleText)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -57,19 +57,31 @@ struct MemoryDetailView: View {
         }
     }
 
+    /// 紧凑的标题 — 只显示「6 月 14 日 · 09:32」
+    private var navigationTitleText: String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "zh_CN")
+        f.dateFormat = "M 月 d 日 · HH:mm"
+        return f.string(from: memory.createdAt)
+    }
+
     private var header: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 14) {
             if let mood = memory.moodTag {
-                Text(mood).font(.title2)
+                Text(mood)
+                    .font(.system(size: 36))
+                    .padding(8)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
             }
             VStack(alignment: .leading, spacing: 4) {
+                Text(memory.createdAt, format: .dateTime.year().month().day().weekday(.wide))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 if let location = memory.locationName {
                     Label(location, systemImage: "location.fill")
-                        .font(.subheadline)
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.primary)
                 }
-                Text(memory.createdAt, format: .dateTime.year().month().day().hour().minute())
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
             Spacer()
         }
@@ -87,12 +99,14 @@ struct MemoryDetailView: View {
                 } else {
                     Rectangle()
                         .fill(.gray.opacity(0.2))
-                        .frame(height: 240)
+                        .aspectRatio(4.0 / 3.0, contentMode: .fit)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
         }
         .tabViewStyle(.page(indexDisplayMode: memory.attachments.count > 1 ? .always : .never))
-        .frame(height: 320)
+        // 自适应：竖图维持原比例（最多 480 高），横图最多 320
+        .frame(minHeight: 240, maxHeight: 480)
     }
 
     private var peopleSection: some View {

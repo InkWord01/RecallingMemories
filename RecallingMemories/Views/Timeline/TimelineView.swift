@@ -72,6 +72,7 @@ struct TimelineView: View {
                         }
                         .buttonStyle(.plain)
                         .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 delete(memory)
@@ -87,14 +88,17 @@ struct TimelineView: View {
                         }
                     }
                 } header: {
-                    HStack {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(group.title)
-                            .font(.subheadline.bold())
-                            .foregroundStyle(.primary)
-                        Spacer()
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .textCase(nil)
+                        Text("·")
+                            .foregroundStyle(.tertiary)
                         Text("\(group.items.count) 条")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.tertiary)
+                        Spacer()
                     }
                 }
             }
@@ -154,9 +158,8 @@ private struct MemoryRow: View {
             // 元信息：地点 / 人物
             metaFooter
         }
-        .padding(12)
-        .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-        .padding(.vertical, 4)
+        .padding(14)
+        .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 14))
     }
 
     @ViewBuilder
