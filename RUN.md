@@ -237,6 +237,8 @@ PR 模板与 Issue 模板见 `.github/`。
 | 真机连不上 | 数据线换原装 / 重连 / 关闭 iPhone 锁屏 |
 | 行尾警告刷屏 | `git config core.autocrlf input` 后重新 clone |
 
+> **首次构建踩坑详情见 [`docs/build-errors.md`](docs/build-errors.md)** —— 12 条阻塞类、4 条警告类，每条带「现象 → 根因 → 修法」。
+
 ---
 
 ## 10. 调试小技巧
