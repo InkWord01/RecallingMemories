@@ -7,6 +7,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject private var weChat = WeChatService.shared
+    @ObservedObject private var easterEgg = EasterEggService.shared
     @State private var loginErrorMessage: String?
     @State private var loginToast: String?
 
@@ -120,10 +121,19 @@ struct ProfileView: View {
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                     }
-                    Button {
-                        OnboardingService.shared.reset()
-                    } label: {
-                        Label("重新查看引导", systemImage: "questionmark.circle")
+                }
+
+                // 调试模式入口 — 隐藏，需在关于页连点版本号 7 次解锁
+                if easterEgg.isDebugUnlocked {
+                    Section {
+                        NavigationLink {
+                            DebugToolsView()
+                        } label: {
+                            Label("调试工具", systemImage: "wrench.and.screwdriver.fill")
+                                .foregroundStyle(.orange)
+                        }
+                    } footer: {
+                        Text("此入口由开发者模式解锁，可在调试工具页关闭。")
                     }
                 }
             }

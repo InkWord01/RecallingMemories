@@ -4,12 +4,20 @@
 //
 //  关于页面 — App 信息 / 作者 / 设计理念 / 联系方式
 //
+//  两个隐藏入口：
+//   - logo 连点 5 次：彩蛋（用户向，看过即解锁，留有徽章）
+//   - 版本号连点 7 次：调试入口（开发者向，可在 Debug 页关闭）
+//
 
 import SwiftUI
 
 struct AboutView: View {
-    @State private var tapCount: Int = 0
-    @State private var showEasterEgg = false
+    @ObservedObject private var easterEgg = EasterEggService.shared
+
+    @State private var logoTapCount: Int = 0
+    @State private var versionTapCount: Int = 0
+    @State private var showEggMessage = false
+    @State private var showDebugUnlocked = false
 
     var body: some View {
         ScrollView {
@@ -27,10 +35,15 @@ struct AboutView: View {
         }
         .navigationTitle("关于")
         .navigationBarTitleDisplayMode(.inline)
-        .alert("🎉", isPresented: $showEasterEgg) {
-            Button("好") { tapCount = 0 }
+        .alert("🎉 你发现了一个秘密", isPresented: $showEggMessage) {
+            Button("收下") { logoTapCount = 0 }
         } message: {
-            Text("谢谢你愿意记录此刻。\n这个 App 由一个人在闲暇时间写就，希望它对你有用。\n— 字之")
+            Text("谢谢你愿意记录此刻。\n这个 App 由一个人在闲暇时间写就，希望它陪你留住一些片段。\n\n— 字之")
+        }
+        .alert("🛠 调试模式已解锁", isPresented: $showDebugUnlocked) {
+            Button("好") { versionTapCount = 0 }
+        } message: {
+            Text("现在可以在「我的」最底部看到「调试工具」入口。如果你不是开发者，可以在那里随时关闭。")
         }
     }
 
@@ -38,21 +51,35 @@ struct AboutView: View {
 
     private var logoBlock: some View {
         VStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(.tint.opacity(0.18))
-                    .frame(width: 110, height: 110)
-                    .blur(radius: 18)
-                Image(systemName: "sparkles")
-                    .font(.system(size: 56, weight: .light))
-                    .foregroundStyle(.tint)
-                    .symbolRenderingMode(.hierarchical)
+            ZStack(alignment: .topTrailing) {
+                ZStack {
+                    Circle()
+                        .fill(.tint.opacity(0.18))
+                        .frame(width: 110, height: 110)
+                        .blur(radius: 18)
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 56, weight: .light))
+                        .foregroundStyle(.tint)
+                        .symbolRenderingMode(.hierarchical)
+                }
+                // 彩蛋已解锁 → 角标提示
+                if easterEgg.isEggUnlocked {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.title3)
+                        .foregroundStyle(.yellow, .yellow.opacity(0.2))
+                        .offset(x: 8, y: -4)
+                        .accessibilityLabel("已解锁的小秘密")
+                }
             }
-            .accessibilityHidden(true)
+            .frame(width: 130, height: 130)
+            .accessibilityElement()
+            .accessibilityLabel(easterEgg.isEggUnlocked ? "拾忆 logo（已发现彩蛋）" : "拾忆 logo")
+            .accessibilityHint("连续点击 5 次有惊喜")
             .onTapGesture {
-                tapCount += 1
-                if tapCount >= 5 {
-                    showEasterEgg = true
+                logoTapCount += 1
+                if logoTapCount >= 5 {
+                    easterEgg.unlockEgg()
+                    showEggMessage = true
                 }
             }
 
@@ -86,7 +113,17 @@ struct AboutView: View {
         VStack(spacing: 0) {
             row(label: "版本", value: AppInfo.marketingVersion)
             divider
-            row(label: "构建号", value: AppInfo.buildNumber)
+            // 版本号行可点 —— 连续 7 次解锁调试
+            Button {
+                versionTapCount += 1
+                if versionTapCount >= 7 && !easterEgg.isDebugUnlocked {
+                    easterEgg.unlockDebug()
+                    showDebugUnlocked = true
+                }
+            } label: {
+                row(label: "构建号", value: AppInfo.buildNumber)
+            }
+            .buttonStyle(.plain)
             divider
             row(label: "最低系统", value: "iOS 17.0")
         }
@@ -104,6 +141,7 @@ struct AboutView: View {
         .font(.subheadline)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .contentShape(Rectangle())
     }
 
     private var divider: some View {
