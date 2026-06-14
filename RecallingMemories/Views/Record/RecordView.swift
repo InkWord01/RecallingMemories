@@ -150,32 +150,52 @@ struct RecordView: View {
 
     @ViewBuilder
     private var attachmentStrip: some View {
-        if !viewModel.attachments.isEmpty {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(viewModel.attachments) { attachment in
-                        ZStack(alignment: .topTrailing) {
-                            AsyncThumbnailView(attachment: attachment)
-                                .frame(width: 72, height: 72)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .accessibilityLabel(accessibilityLabel(for: attachment))
-
-                            Button {
-                                viewModel.removeAttachment(attachment)
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.white, .black.opacity(0.6))
-                                    .background(Circle().fill(.ultraThinMaterial))
-                            }
-                            .offset(x: 4, y: -4)
-                            .accessibilityLabel("移除附件")
-                        }
+        if !viewModel.attachments.isEmpty || viewModel.processingMedia != nil {
+            VStack(spacing: 6) {
+                // 顶部进度胶囊（仅处理中显示）
+                if let processing = viewModel.processingMedia {
+                    HStack(spacing: 8) {
+                        ProgressView().controlSize(.small)
+                        Text(processing.label)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .accessibilityLabel(processing.label)
                 }
-                .padding(.horizontal)
+
+                if !viewModel.attachments.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(viewModel.attachments) { attachment in
+                                ZStack(alignment: .topTrailing) {
+                                    AsyncThumbnailView(attachment: attachment)
+                                        .frame(width: 72, height: 72)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                        .accessibilityLabel(accessibilityLabel(for: attachment))
+
+                                    Button {
+                                        viewModel.removeAttachment(attachment)
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundStyle(.white, .black.opacity(0.6))
+                                            .background(Circle().fill(.ultraThinMaterial))
+                                    }
+                                    .offset(x: 4, y: -4)
+                                    .accessibilityLabel("移除附件")
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                    .frame(height: 88)
+                    .accessibilityLabel("已添加的媒体附件")
+                }
             }
-            .frame(height: 88)
-            .accessibilityLabel("已添加的媒体附件")
+            .animation(.easeInOut(duration: 0.2), value: viewModel.processingMedia)
         }
     }
 
@@ -223,8 +243,10 @@ struct RecordView: View {
             PhotosPicker(selection: $viewModel.pickerItems, maxSelectionCount: 9, matching: .any(of: [.images, .videos])) {
                 Image(systemName: "photo.on.rectangle")
                     .font(.title3)
+                    .foregroundStyle(viewModel.processingMedia != nil ? Color.secondary : Color.primary)
                     .frame(width: 36, height: 36)
             }
+            .disabled(viewModel.processingMedia != nil)
             .accessibilityLabel("添加照片或视频")
 
             Button {

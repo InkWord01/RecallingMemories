@@ -43,6 +43,25 @@ struct SpacetimeAnchor: Equatable {
     }
 }
 
+/// 媒体处理状态 — 给 RecordView 显示进度提示用
+struct MediaProcessingState: Equatable {
+    enum Kind {
+        case image
+        case video
+    }
+
+    let kind: Kind
+    /// 当前处理到第几个（1-based）
+    let current: Int
+    /// 总数
+    let total: Int
+
+    var label: String {
+        let action = kind == .video ? "压缩视频" : "压缩照片"
+        return total > 1 ? "\(action) \(current)/\(total)…" : "\(action)…"
+    }
+}
+
 @MainActor
 final class RecordViewModel: ObservableObject {
 
@@ -61,6 +80,9 @@ final class RecordViewModel: ObservableObject {
 
     /// 是否正在录音转写
     @Published private(set) var isRecording = false
+
+    /// 媒体处理进度 — 选完照片/视频到落盘的过渡态
+    @Published private(set) var processingMedia: MediaProcessingState?
 
     /// 错误提示
     @Published var errorMessage: String?
@@ -97,9 +119,22 @@ final class RecordViewModel: ObservableObject {
     /// PhotosPicker 选中变化时调用
     func handlePickerChange() async {
         guard !pickerItems.isEmpty else { return }
+        let items = pickerItems
+        // 立即清空 picker 绑定，避免用户连续选择时重复触发
+        pickerItems.removeAll()
+
         let includeCloudData = CloudSyncService.shared.isEnabled
             && CloudSyncService.shared.includeMedia
-        for item in pickerItems {
+        let total = items.count
+
+        for (index, item) in items.enumerated() {
+            // 推断类型用于显示「压缩照片中…」/「压缩视频中…」
+            let isVideo = item.supportedContentTypes.contains(where: { $0.conforms(to: .movie) })
+            processingMedia = MediaProcessingState(
+                kind: isVideo ? .video : .image,
+                current: index + 1,
+                total: total
+            )
             do {
                 let attachment = try await AttachmentStore.persist(item, includeCloudData: includeCloudData)
                 attachments.append(attachment)
@@ -107,7 +142,7 @@ final class RecordViewModel: ObservableObject {
                 errorMessage = "媒体保存失败：\(error.localizedDescription)"
             }
         }
-        pickerItems.removeAll()
+        processingMedia = nil
     }
 
     func removeAttachment(_ attachment: Attachment) {
