@@ -25,6 +25,8 @@ struct RecallingMemoriesApp: App {
         } catch {
             fatalError("初始化 SwiftData ModelContainer 失败：\(error)")
         }
+        // 注册微信 SDK（无 SDK 集成时为 no-op）
+        WeChatService.register()
     }
 
     var body: some Scene {

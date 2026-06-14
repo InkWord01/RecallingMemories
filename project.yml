@@ -44,6 +44,9 @@ targets:
         NSSpeechRecognitionUsageDescription: 拾忆需要语音识别权限，将你的语音快速转为文字。
         NSContactsUsageDescription: 拾忆需要通讯录权限，用于添加「和谁在一起」标签。
         NSAppleMusicUsageDescription: 拾忆不会使用音乐库，仅为系统兼容声明。
+        # 微信开放平台配置 — 替换为实际 AppID 与 Universal Link
+        WeChatAppID: wxYOUR_WECHAT_APP_ID
+        WeChatUniversalLink: https://your.universal.link/wechat/
         LSApplicationQueriesSchemes:
           - weixin
           - weixinULAPI

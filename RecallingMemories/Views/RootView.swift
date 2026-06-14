@@ -51,7 +51,13 @@ struct RootView: View {
             router.pendingMemoryID = nil
         }
         .onOpenURL { url in
-            router.handle(url: url)
+            // 优先尝试微信回调；如未匹配再走应用自定义深链
+            if !WeChatService.shared.handleOpenURL(url) {
+                router.handle(url: url)
+            }
+        }
+        .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+            WeChatService.shared.handleUniversalLink(activity)
         }
         .sheet(item: $pendingMemory) { memory in
             MemoryDetailView(memory: memory)

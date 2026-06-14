@@ -16,6 +16,11 @@ struct ShareComposerView: View {
     @State private var isRendering = false
     @State private var showShareSheet = false
     @State private var savedToAlbumToast = false
+    @State private var statusToast: String?
+
+    private var isWeChatAvailable: Bool {
+        WeChatService.shared.isWeChatInstalled
+    }
 
     var body: some View {
         NavigationStack {
@@ -46,6 +51,8 @@ struct ShareComposerView: View {
             .overlay(alignment: .top) {
                 if savedToAlbumToast {
                     toast("已保存到相册")
+                } else if let status = statusToast {
+                    toast(status)
                 }
             }
         }
@@ -122,31 +129,61 @@ struct ShareComposerView: View {
     // MARK: - 操作栏
 
     private var actionBar: some View {
-        HStack(spacing: 12) {
-            Button {
-                saveToAlbum()
-            } label: {
-                Label("保存到相册", systemImage: "square.and.arrow.down")
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+        VStack(spacing: 8) {
+            // 微信直发（仅安装时显示）
+            if isWeChatAvailable {
+                HStack(spacing: 12) {
+                    weChatButton(label: "好友", icon: "message.fill", scene: .session)
+                    weChatButton(label: "朋友圈", icon: "person.3.fill", scene: .timeline)
+                    weChatButton(label: "收藏", icon: "star.fill", scene: .favorite)
+                }
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-            .disabled(renderedImage == nil)
 
-            Button {
-                showShareSheet = true
-            } label: {
-                Label("分享", systemImage: "square.and.arrow.up")
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+            HStack(spacing: 12) {
+                Button {
+                    saveToAlbum()
+                } label: {
+                    Label("保存到相册", systemImage: "square.and.arrow.down")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .disabled(renderedImage == nil)
+
+                Button {
+                    showShareSheet = true
+                } label: {
+                    Label("更多", systemImage: "square.and.arrow.up")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(renderedImage == nil)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(renderedImage == nil)
         }
         .padding()
         .background(.ultraThinMaterial)
+    }
+
+    private func weChatButton(label: String, icon: String, scene: WeChatService.SharingScene) -> some View {
+        Button {
+            Task { await sendToWeChat(scene: scene) }
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.title3)
+                Text(label)
+                    .font(.caption)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(Color.green.opacity(0.15), in: RoundedRectangle(cornerRadius: 10))
+            .foregroundStyle(Color.green)
+        }
+        .buttonStyle(.plain)
+        .disabled(renderedImage == nil)
     }
 
     // MARK: - 渲染 / 保存
@@ -168,6 +205,20 @@ struct ShareComposerView: View {
             try? await Task.sleep(for: .seconds(1.5))
             withAnimation { savedToAlbumToast = false }
         }
+    }
+
+    /// 调起微信 SDK 直发
+    private func sendToWeChat(scene: WeChatService.SharingScene) async {
+        guard let image = renderedImage else { return }
+        let ok = await WeChatService.shared.shareImage(image, scene: scene)
+        await showStatus(ok ? "已发送" : "发送已取消")
+    }
+
+    @MainActor
+    private func showStatus(_ text: String) async {
+        withAnimation { statusToast = text }
+        try? await Task.sleep(for: .seconds(1.5))
+        withAnimation { statusToast = nil }
     }
 
     // MARK: - Toast
