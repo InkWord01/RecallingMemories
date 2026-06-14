@@ -50,6 +50,9 @@ struct RootView: View {
             pendingMemory = allMemories.first { $0.id == id }
             router.pendingMemoryID = nil
         }
+        .onOpenURL { url in
+            router.handle(url: url)
+        }
         .sheet(item: $pendingMemory) { memory in
             MemoryDetailView(memory: memory)
                 .presentationDetents([.medium, .large])

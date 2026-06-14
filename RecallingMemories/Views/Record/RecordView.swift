@@ -12,6 +12,7 @@ import SwiftData
 struct RecordView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = RecordViewModel()
+    @StateObject private var router = AppRouter.shared
 
     @FocusState private var isInputFocused: Bool
     @State private var showPeoplePicker = false
@@ -30,6 +31,13 @@ struct RecordView: View {
             .onAppear {
                 isInputFocused = true
                 viewModel.captureSpacetimeAnchor()
+            }
+            .onChange(of: router.requestQuickRecordFocus) { _, requested in
+                // 来自 Widget「快速记录」深链：重置状态 + 聚焦输入框
+                guard requested else { return }
+                isInputFocused = true
+                viewModel.captureSpacetimeAnchor()
+                router.requestQuickRecordFocus = false
             }
             .onChange(of: viewModel.pickerItems) { _, _ in
                 Task { await viewModel.handlePickerChange() }

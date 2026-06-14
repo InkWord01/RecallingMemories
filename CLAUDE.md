@@ -25,13 +25,22 @@
 
 ```
 RecallingMemories/
-├── App/         # @main 入口
+├── App/         # @main 入口 + AppRouter
 ├── Views/       # SwiftUI 视图（按业务模块分子目录）
 ├── Models/      # @Model 数据层
-├── Services/    # 单例服务（定位、微信、渲染等）
-├── Resources/   # Assets / Info.plist
+├── Services/    # 单例服务（定位、微信、渲染、推送、Widget Snapshot 发布等）
+├── Shared/      # 主 App 与 Widget Extension 共享的代码（Snapshot 模型 / Deep Link 常量）
+├── Resources/   # Assets / Info.plist / entitlements
 └── Utils/       # 通用工具
+
+RecallingMemoriesWidget/   # Widget Extension target（独立 bundle id）
+├── *.swift                # Widget 代码（Provider / 各 Widget）
+├── Info.plist
+└── *.entitlements
 ```
+
+App Group：`group.com.recallingmemories.app` — 主 App 与 Widget 共享 UserDefaults。
+URL Scheme：`recallingmemories://` — 见 `Shared/WidgetShared.swift`。
 
 ## 命名与代码风格
 

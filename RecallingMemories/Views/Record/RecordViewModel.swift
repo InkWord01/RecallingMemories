@@ -161,6 +161,8 @@ final class RecordViewModel: ObservableObject {
         context.insert(memory)
         do {
             try context.save()
+            // 通知 Widget 数据已变化
+            WidgetSnapshotPublisher.publish(modelContainer: context.container)
             reset()
         } catch {
             errorMessage = "保存失败：\(error.localizedDescription)"

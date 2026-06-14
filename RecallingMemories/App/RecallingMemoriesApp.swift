@@ -33,13 +33,17 @@ struct RecallingMemoriesApp: App {
                 .preferredColorScheme(.dark) // 设计理念：深色模式优先
                 .task {
                     await rescheduleOnThisDayNotifications()
+                    WidgetSnapshotPublisher.publish(modelContainer: modelContainer)
                 }
         }
         .modelContainer(modelContainer)
         .onChange(of: scenePhase) { _, phase in
-            // 回到前台时重排，覆盖「跨天」「设置变更后台」等场景
+            // 回到前台时重排 + 发布最新快照
             if phase == .active {
-                Task { await rescheduleOnThisDayNotifications() }
+                Task {
+                    await rescheduleOnThisDayNotifications()
+                    WidgetSnapshotPublisher.publish(modelContainer: modelContainer)
+                }
             }
         }
     }

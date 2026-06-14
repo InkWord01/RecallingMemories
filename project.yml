@@ -49,10 +49,46 @@ targets:
           - weixinULAPI
           - weixinURLParamsAPI
         CFBundleURLTypes:
-          - CFBundleURLSchemes:
+          # 微信回调
+          - CFBundleURLName: wechat
+            CFBundleURLSchemes:
               - wxYOUR_WECHAT_APP_ID # 微信开放平台分配的 AppID
+          # 拾忆自定义 scheme — Widget / 通知 / 系统跳转入口
+          - CFBundleURLName: com.recallingmemories.app
+            CFBundleURLSchemes:
+              - recallingmemories
+    entitlements:
+      path: RecallingMemories/Resources/RecallingMemories.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.recallingmemories.app
+    dependencies:
+      - target: RecallingMemoriesWidget
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.recallingmemories.app
         TARGETED_DEVICE_FAMILY: "1" # iPhone Only
         SUPPORTS_MACCATALYST: NO
+
+  RecallingMemoriesWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: RecallingMemoriesWidget
+      # 共享代码：Widget 需要直接复用 Shared 目录里的 Snapshot 模型
+      - path: RecallingMemories/Shared
+    info:
+      path: RecallingMemoriesWidget/Info.plist
+      properties:
+        CFBundleDisplayName: 拾忆
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+    entitlements:
+      path: RecallingMemoriesWidget/RecallingMemoriesWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.recallingmemories.app
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.recallingmemories.app.widget
+        TARGETED_DEVICE_FAMILY: "1"

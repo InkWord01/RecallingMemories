@@ -111,6 +111,8 @@ struct TimelineView: View {
         }
         modelContext.delete(memory)
         try? modelContext.save()
+        // 通知 Widget 刷新
+        WidgetSnapshotPublisher.publish(modelContainer: modelContext.container)
     }
 }
 
