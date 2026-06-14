@@ -184,7 +184,7 @@ private struct MemoryRow: View {
 
             // 缩略图网格
             if !memory.attachments.isEmpty {
-                ThumbnailGrid(attachments: memory.attachments)
+                ThumbnailGrid(attachments: memory.sortedAttachments)
             }
 
             // 元信息：地点 / 人物

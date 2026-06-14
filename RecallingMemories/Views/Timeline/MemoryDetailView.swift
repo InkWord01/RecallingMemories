@@ -91,7 +91,7 @@ struct MemoryDetailView: View {
 
     private var mediaGallery: some View {
         TabView {
-            ForEach(memory.attachments) { attachment in
+            ForEach(memory.sortedAttachments) { attachment in
                 if let image = loadImage(attachment) {
                     Image(uiImage: image)
                         .resizable()

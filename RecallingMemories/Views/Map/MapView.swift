@@ -224,7 +224,7 @@ private struct ClusterMemoryRow: View {
 
     @ViewBuilder
     private var thumbnail: some View {
-        if let first = memory.attachments.first,
+        if let first = memory.sortedAttachments.first,
            let img = loadImage(first) {
             Image(uiImage: img)
                 .resizable()

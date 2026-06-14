@@ -161,6 +161,8 @@ final class MemorySearchTests: XCTestCase {
         TestFactory.memory(in: ctx, text: "无附件")
         TestFactory.memory(in: ctx, text: "有附件",
                            attachments: [TestFactory.photoAttachment()])
+        // 触发 SwiftData 关系同步，否则 inverse 关系可能延迟可见
+        try! ctx.save()
 
         let memories = try! ctx.fetch(FetchDescriptor<Memory>())
         var query = MemorySearchQuery()

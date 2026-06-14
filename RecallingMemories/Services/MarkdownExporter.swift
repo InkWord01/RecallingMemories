@@ -157,7 +157,7 @@ enum MarkdownExporter {
 
         // 附件
         if !memory.attachments.isEmpty {
-            for attachment in memory.attachments {
+            for attachment in memory.sortedAttachments {
                 let mdPath: String
                 if let dir = attachmentsDir {
                     let dst = dir.appendingPathComponent(attachment.path)

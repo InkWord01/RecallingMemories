@@ -71,11 +71,11 @@ Embedded binary's bundle identifier is not prefixed with the parent app's bundle
 ```
 SwiftData/SchemaCompatibility.swift:N: Fatal error: Schema migration failed
 ```
-**根因** 仓库期间改过 `Memory` / `Person` 字段（移除 `@Attribute(.unique)`、加 `inverse`），如果你**重装在已有数据库的设备**会触发迁移失败。
+**根因** 仓库期间改过 `Memory` / `Person` 字段（移除 `@Attribute(.unique)`、加 `inverse`、`Attachment` 从 struct 升级为 `@Model`），如果你**重装在已有数据库的设备**会触发迁移失败。
 **修**（开发期最快）
 - 真机：长按拾忆图标 → 删除 App
 - 模拟器：Device → Erase All Content and Settings
-- 生产期需要做 `VersionedSchema` + `SchemaMigrationPlan`，目前未上线，留给真要发版前补
+- **生产期上线前必须做**：定义 `VersionedSchema` + `SchemaMigrationPlan`，把 v1（`Attachment` Codable struct）→ v2（`Attachment` `@Model` class）的字段映射写清。当前用户数 0，未上线，留给真要发版前补。
 
 ---
 

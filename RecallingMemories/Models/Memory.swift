@@ -38,6 +38,7 @@ final class Memory {
     var people: [Person] = []
 
     /// 媒体附件 —— 删除 Memory 时级联删除附件
+    /// SwiftData 反向关系底层无序，访问时若需稳定顺序请用 `sortedAttachments`
     @Relationship(deleteRule: .cascade, inverse: \Attachment.memory)
     var attachments: [Attachment] = []
 
@@ -68,3 +69,10 @@ final class Memory {
 }
 
 extension Memory: Identifiable {}
+
+extension Memory {
+    /// 按创建时间升序排列的附件 —— UI 渲染时用此顺序，避免 SwiftData 反向关系无序导致的"附件位置每次打开都变"
+    var sortedAttachments: [Attachment] {
+        attachments.sorted { $0.createdAt < $1.createdAt }
+    }
+}
