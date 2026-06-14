@@ -11,9 +11,16 @@ import UIKit
 
 /// 卡片模板
 enum ShareCardTemplate: String, CaseIterable, Identifiable {
+    // 免费模板
     case minimal      // 极简：渐变 + 大字
     case polaroid     // 拍立得：白边 + 主图 + 手写字
     case kraft        // 卡纸：复古色调 + 衬线字
+
+    // Pro 模板（占位 — 待开发，付费策略待定）
+    case magazine     // 杂志风：双栏排版 + 大标题
+    case film         // 胶片：35mm 暗房风
+    case ink          // 水墨：东方留白
+    case neon         // 霓虹：赛博夜景
 
     var id: String { rawValue }
 
@@ -22,6 +29,31 @@ enum ShareCardTemplate: String, CaseIterable, Identifiable {
         case .minimal:  return "极简"
         case .polaroid: return "拍立得"
         case .kraft:    return "卡纸"
+        case .magazine: return "杂志"
+        case .film:     return "胶片"
+        case .ink:      return "水墨"
+        case .neon:     return "霓虹"
+        }
+    }
+
+    /// 是否 Pro 模板（敬请期待，付费策略待定）
+    var isPro: Bool {
+        switch self {
+        case .minimal, .polaroid, .kraft: return false
+        case .magazine, .film, .ink, .neon: return true
+        }
+    }
+
+    /// 模板预览的 SF Symbol 图标
+    var icon: String {
+        switch self {
+        case .minimal:  return "square"
+        case .polaroid: return "photo"
+        case .kraft:    return "doc.richtext"
+        case .magazine: return "newspaper"
+        case .film:     return "film"
+        case .ink:      return "scribble.variable"
+        case .neon:     return "sparkle"
         }
     }
 }
@@ -33,10 +65,12 @@ enum ShareCardRenderer {
     static func render(memory: Memory,
                        template: ShareCardTemplate = .minimal,
                        size: CGSize = CGSize(width: 1080, height: 1440)) -> UIImage? {
-        let view = ShareCardView(memory: memory, template: template)
+        // Pro 模板尚未实现，回退到极简，外层 UI 会拦截不让选中此分支
+        let actual = template.isPro ? .minimal : template
+        let view = ShareCardView(memory: memory, template: actual)
             .frame(width: size.width, height: size.height)
         let renderer = ImageRenderer(content: view)
-        renderer.scale = 1.0  // 内容已是 1080×1440 物理像素，不再放大
+        renderer.scale = 1.0
         renderer.proposedSize = ProposedViewSize(width: size.width, height: size.height)
         return renderer.uiImage
     }
@@ -53,6 +87,8 @@ struct ShareCardView: View {
         case .minimal:  MinimalCard(memory: memory)
         case .polaroid: PolaroidCard(memory: memory)
         case .kraft:    KraftCard(memory: memory)
+        // Pro 模板占位：实际不会渲染（render() 已回退）；保留 case 以编译完整
+        case .magazine, .film, .ink, .neon: MinimalCard(memory: memory)
         }
     }
 }

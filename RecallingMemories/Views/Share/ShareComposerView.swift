@@ -17,6 +17,7 @@ struct ShareComposerView: View {
     @State private var showShareSheet = false
     @State private var savedToAlbumToast = false
     @State private var statusToast: String?
+    @State private var showProAlert = false
 
     private var isWeChatAvailable: Bool {
         WeChatService.shared.isWeChatInstalled
@@ -54,6 +55,11 @@ struct ShareComposerView: View {
                 } else if let status = statusToast {
                     toast(status)
                 }
+            }
+            .alert("敬请期待", isPresented: $showProAlert) {
+                Button("好的", role: .cancel) {}
+            } message: {
+                Text("Pro 模板正在打磨中，将在后续版本推出。")
             }
         }
     }
@@ -93,22 +99,13 @@ struct ShareComposerView: View {
             HStack(spacing: 12) {
                 ForEach(ShareCardTemplate.allCases) { template in
                     Button {
-                        guard template != selectedTemplate else { return }
-                        selectedTemplate = template
-                    } label: {
-                        VStack(spacing: 4) {
-                            Image(systemName: iconName(for: template))
-                                .font(.title3)
-                            Text(template.displayName)
-                                .font(.caption)
+                        if template.isPro {
+                            showProAlert = true
+                        } else if template != selectedTemplate {
+                            selectedTemplate = template
                         }
-                        .frame(width: 76, height: 64)
-                        .foregroundStyle(template == selectedTemplate ? .white : .primary)
-                        .background(
-                            template == selectedTemplate ? AnyShapeStyle(Color.accentColor)
-                                                         : AnyShapeStyle(.thinMaterial),
-                            in: RoundedRectangle(cornerRadius: 10)
-                        )
+                    } label: {
+                        templateChip(template: template)
                     }
                     .buttonStyle(.plain)
                 }
@@ -118,11 +115,35 @@ struct ShareComposerView: View {
         .padding(.vertical, 12)
     }
 
-    private func iconName(for template: ShareCardTemplate) -> String {
-        switch template {
-        case .minimal:  return "square"
-        case .polaroid: return "photo"
-        case .kraft:    return "doc.richtext"
+    private func templateChip(template: ShareCardTemplate) -> some View {
+        let isSelected = template == selectedTemplate
+        return ZStack(alignment: .topTrailing) {
+            VStack(spacing: 4) {
+                Image(systemName: template.icon)
+                    .font(.title3)
+                Text(template.displayName)
+                    .font(.caption)
+            }
+            .frame(width: 76, height: 64)
+            .foregroundStyle(
+                isSelected ? .white :
+                (template.isPro ? Color.secondary : Color.primary)
+            )
+            .background(
+                isSelected ? AnyShapeStyle(Color.accentColor)
+                            : AnyShapeStyle(.thinMaterial),
+                in: RoundedRectangle(cornerRadius: 10)
+            )
+            .opacity(template.isPro ? 0.7 : 1.0)
+
+            if template.isPro {
+                Image(systemName: "lock.fill")
+                    .font(.caption2)
+                    .foregroundStyle(.white)
+                    .padding(4)
+                    .background(Color.orange, in: Circle())
+                    .offset(x: 6, y: -6)
+            }
         }
     }
 
