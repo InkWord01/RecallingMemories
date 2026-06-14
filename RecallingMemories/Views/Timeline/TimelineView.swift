@@ -44,6 +44,12 @@ private struct MemoryRow: View {
                     Text("·")
                     Text(location)
                 }
+                if !memory.people.isEmpty {
+                    Text("·")
+                    Label(memory.people.map(\.name).joined(separator: "、"),
+                          systemImage: "person.2.fill")
+                        .labelStyle(.titleAndIcon)
+                }
             }
             .font(.caption)
             .foregroundStyle(.secondary)

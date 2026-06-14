@@ -14,11 +14,13 @@ struct RecordView: View {
     @StateObject private var viewModel = RecordViewModel()
 
     @FocusState private var isInputFocused: Bool
+    @State private var showPeoplePicker = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 inputArea
+                peopleStrip
                 attachmentStrip
                 moodPicker
                 anchorToolbar
@@ -36,6 +38,10 @@ struct RecordView: View {
                 Button("好") { viewModel.errorMessage = nil }
             } message: {
                 Text(viewModel.errorMessage ?? "")
+            }
+            .sheet(isPresented: $showPeoplePicker) {
+                PeoplePickerView(selected: $viewModel.selectedPeople)
+                    .presentationDetents([.medium, .large])
             }
         }
     }
@@ -73,6 +79,38 @@ struct RecordView: View {
         }
         .padding(.vertical)
         .frame(maxHeight: .infinity)
+    }
+
+    // MARK: - 已选人物条
+
+    @ViewBuilder
+    private var peopleStrip: some View {
+        if !viewModel.selectedPeople.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(viewModel.selectedPeople) { person in
+                        HStack(spacing: 6) {
+                            AvatarView(name: person.name, imagePath: person.avatarPath)
+                                .frame(width: 20, height: 20)
+                            Text(person.name)
+                                .font(.caption)
+                            Button {
+                                viewModel.selectedPeople.removeAll { $0.id == person.id }
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(.white.opacity(0.08), in: Capsule())
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .frame(height: 40)
+        }
     }
 
     // MARK: - 附件缩略图条
@@ -150,10 +188,11 @@ struct RecordView: View {
             }
 
             Button {
-                // TODO: 跳出人物选择 sheet
+                showPeoplePicker = true
             } label: {
-                Image(systemName: "person.2.fill")
+                Image(systemName: viewModel.selectedPeople.isEmpty ? "person.2" : "person.2.fill")
                     .font(.title3)
+                    .foregroundStyle(viewModel.selectedPeople.isEmpty ? .primary : .tint)
                     .frame(width: 36, height: 36)
             }
 

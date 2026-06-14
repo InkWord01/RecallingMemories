@@ -51,6 +51,9 @@ final class RecordViewModel: ObservableObject {
     /// PhotosPicker 选中的项（绑定到 View）
     @Published var pickerItems: [PhotosPickerItem] = []
 
+    /// 已挂载的「和谁在一起」
+    @Published var selectedPeople: [Person] = []
+
     /// 用户从极简情绪标签中选择
     @Published var selectedMood: String?
 
@@ -153,6 +156,7 @@ final class RecordViewModel: ObservableObject {
             attachments: attachments,
             tags: []
         )
+        memory.people = selectedPeople
 
         context.insert(memory)
         do {
@@ -166,6 +170,7 @@ final class RecordViewModel: ObservableObject {
     private func reset() {
         draftText = ""
         attachments = []
+        selectedPeople = []
         selectedMood = nil
         captureSpacetimeAnchor()
     }
