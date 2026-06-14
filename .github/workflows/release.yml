@@ -133,7 +133,7 @@ jobs:
 
           # 顺便压一份 .app.zip 方便用户直接拖到模拟器
           APP_ZIP="RecallingMemories-${{ steps.ver.outputs.label }}.app.zip"
-          (cd "build/DerivedData/Build/Products/Release-iphoneos" && zip -qr "../../../../$OUT_DIR/$APP_ZIP" RecallingMemories.app)
+          (cd "build/DerivedData/Build/Products/Release-iphoneos" && zip -qr "$GITHUB_WORKSPACE/$OUT_DIR/$APP_ZIP" RecallingMemories.app)
 
           echo "产物：" && ls -lh "$OUT_DIR"
 
@@ -159,7 +159,7 @@ jobs:
           if [ -d "$APP_SIM" ]; then
             SIM_ZIP="RecallingMemories-${{ steps.ver.outputs.label }}-simulator.app.zip"
             (cd "build/DerivedDataSim/Build/Products/Release-iphonesimulator" && \
-              zip -qr "../../../../build/output/$SIM_ZIP" RecallingMemories.app)
+              zip -qr "$GITHUB_WORKSPACE/build/output/$SIM_ZIP" RecallingMemories.app)
             echo "Simulator app: $SIM_ZIP"
           fi
           ls -lh build/output/
