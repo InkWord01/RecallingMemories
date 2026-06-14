@@ -1,0 +1,182 @@
+# 打 iOS 安装包 — 云端 macOS runner 跑
+#
+# 触发方式：
+#   1. 手动：GitHub 仓库页 → Actions → Release iOS Build → Run workflow
+#   2. 推 tag：git tag v0.1.0 && git push origin v0.1.0  → 自动跑
+#
+# 产物：
+#   - RecallingMemories-unsigned.ipa  （未签名，安装需 sideload 工具如 AltStore/Sideloadly，或用真实证书重签）
+#   - RecallingMemories.app.zip       （app bundle 压缩，方便 Xcode 模拟器拖入）
+#
+# 要做真实可分发的 ipa（签名+TestFlight），需在 Apple Developer 后台拿到证书 / profile，
+# 再在仓库 Settings → Secrets 配置：APP_STORE_CONNECT_API_KEY / SIGNING_CERTIFICATE_P12 / PROVISIONING_PROFILE
+# 当前 unsigned 包不能直接装到非越狱真机，但能验证编译链路打通、安装到模拟器。
+
+name: Release iOS Build
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: "构建号（不填则用 project.yml 当前值）"
+        required: false
+        default: ""
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false   # release 不要被新推送取消
+
+jobs:
+  build-ipa:
+    runs-on: macos-14
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_15*.app | sort -V | tail -1)"
+          xcodebuild -version
+
+      - name: Install dependencies
+        run: |
+          brew install xcodegen librsvg
+
+      - name: 应用自定义构建号（如指定）
+        if: ${{ github.event.inputs.build_number != '' }}
+        run: |
+          NEW="${{ github.event.inputs.build_number }}"
+          echo "覆盖构建号为：$NEW"
+          # macOS sed 需要 -i ''
+          sed -i '' -E "s/^(    CURRENT_PROJECT_VERSION:) \"[^\"]+\"/\1 \"$NEW\"/" project.yml
+          grep CURRENT_PROJECT_VERSION project.yml
+
+      - name: Generate Asset Catalog
+        run: bash tools/generate-icons.sh
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: 读取版本信息
+        id: ver
+        run: |
+          M=$(grep '^    MARKETING_VERSION:' project.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          B=$(grep '^    CURRENT_PROJECT_VERSION:' project.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "marketing=$M" >> "$GITHUB_OUTPUT"
+          echo "build=$B"     >> "$GITHUB_OUTPUT"
+          echo "label=$M-$B"  >> "$GITHUB_OUTPUT"
+          echo "Version: $M ($B)"
+
+      # ───── 编译 .app（unsigned，不需要证书）─────
+      - name: Build .app for device (unsigned)
+        run: |
+          xcodebuild \
+            -project RecallingMemories.xcodeproj \
+            -scheme RecallingMemories \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build/DerivedData \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_ENTITLEMENTS="" \
+            EXPANDED_CODE_SIGN_IDENTITY="" \
+            EXPANDED_CODE_SIGN_IDENTITY_NAME="" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            build
+
+      # ───── 把 .app 包成 .ipa（unsigned）─────
+      # 标准做法：建 Payload 目录，把 .app 放进去，zip 改后缀
+      - name: Package .ipa
+        run: |
+          APP_PATH="build/DerivedData/Build/Products/Release-iphoneos/RecallingMemories.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "❌ 找不到 .app：$APP_PATH"
+            find build/DerivedData -name "*.app" -type d
+            exit 1
+          fi
+
+          mkdir -p build/Payload
+          cp -R "$APP_PATH" build/Payload/
+
+          OUT_DIR="build/output"
+          mkdir -p "$OUT_DIR"
+
+          IPA_NAME="RecallingMemories-${{ steps.ver.outputs.label }}-unsigned.ipa"
+          (cd build && zip -qr "output/$IPA_NAME" Payload)
+
+          # 顺便压一份 .app.zip 方便用户直接拖到模拟器
+          APP_ZIP="RecallingMemories-${{ steps.ver.outputs.label }}.app.zip"
+          (cd "build/DerivedData/Build/Products/Release-iphoneos" && zip -qr "../../../../$OUT_DIR/$APP_ZIP" RecallingMemories.app)
+
+          echo "产物：" && ls -lh "$OUT_DIR"
+
+      # ───── 同时编一份模拟器版（可直接装到 Xcode 模拟器）─────
+      - name: Build .app for simulator
+        run: |
+          xcodebuild \
+            -project RecallingMemories.xcodeproj \
+            -scheme RecallingMemories \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath build/DerivedDataSim \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            build
+
+      - name: Package simulator .app.zip
+        run: |
+          APP_SIM="build/DerivedDataSim/Build/Products/Release-iphonesimulator/RecallingMemories.app"
+          if [ -d "$APP_SIM" ]; then
+            SIM_ZIP="RecallingMemories-${{ steps.ver.outputs.label }}-simulator.app.zip"
+            (cd "build/DerivedDataSim/Build/Products/Release-iphonesimulator" && \
+              zip -qr "../../../../build/output/$SIM_ZIP" RecallingMemories.app)
+            echo "Simulator app: $SIM_ZIP"
+          fi
+          ls -lh build/output/
+
+      # ───── 上传成 GitHub Actions Artifacts（保留 90 天，免费）─────
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: RecallingMemories-${{ steps.ver.outputs.label }}
+          path: build/output/*
+          retention-days: 90
+          if-no-files-found: error
+
+      # ───── 如果是 tag 触发，自动创建 GitHub Release ─────
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: 拾忆 ${{ steps.ver.outputs.marketing }} (${{ steps.ver.outputs.build }})
+          body: |
+            ## 拾忆 RecallingMemories ${{ steps.ver.outputs.marketing }}
+
+            **构建号**：${{ steps.ver.outputs.build }}
+            **构建时间**：${{ github.event.head_commit.timestamp }}
+            **提交**：${{ github.sha }}
+
+            ### 安装说明
+
+            - **`*-unsigned.ipa`** —— 未签名包，需用 [AltStore](https://altstore.io) / [Sideloadly](https://sideloadly.io) 自签后才能装到真机
+            - **`*-simulator.app.zip`** —— 解压后拖到 Xcode 模拟器即可运行
+            - **`*.app.zip`** —— 真机版 .app，需用真实证书签名后才可分发
+
+            ### 待 macOS 端做的事
+            - 接入真实 Apple Developer 证书做签名 → 能直接 TestFlight
+            - 替换微信 AppID / Universal Link
+            - CloudKit Schema Promote 到 Production
+          files: |
+            build/output/*
+          draft: false
+          prerelease: ${{ contains(steps.ver.outputs.marketing, 'beta') || contains(steps.ver.outputs.marketing, 'alpha') }}
