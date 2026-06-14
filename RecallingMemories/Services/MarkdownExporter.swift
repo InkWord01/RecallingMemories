@@ -89,9 +89,11 @@ enum MarkdownExporter {
         var caughtError: Error?
 
         let intent = NSFileAccessIntent.readingIntent(with: root, options: [.forUploading])
+        let queue = OperationQueue()
+        queue.qualityOfService = .userInitiated
         let group = DispatchGroup()
         group.enter()
-        coordinator.coordinate(with: [intent], queue: .global(qos: .userInitiated)) { error in
+        coordinator.coordinate(with: [intent], queue: queue) { error in
             defer { group.leave() }
             if let error {
                 caughtError = error

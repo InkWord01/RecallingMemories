@@ -229,7 +229,7 @@ struct DebugToolsView: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.body)
-                    .foregroundStyle(role == .destructive ? .red : .tint)
+                    .foregroundStyle(role == .destructive ? Color.red : Color.accentColor)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)

@@ -240,76 +240,88 @@ struct RecordView: View {
 
     private var anchorToolbar: some View {
         HStack(spacing: 16) {
-            PhotosPicker(selection: $viewModel.pickerItems, maxSelectionCount: 9, matching: .any(of: [.images, .videos])) {
-                Image(systemName: "photo.on.rectangle")
-                    .font(.title3)
-                    .foregroundStyle(viewModel.processingMedia != nil ? Color.secondary : Color.primary)
-                    .frame(width: 36, height: 36)
-            }
-            .disabled(viewModel.processingMedia != nil)
-            .accessibilityLabel("添加照片或视频")
-
-            Button {
-                viewModel.toggleVoiceCapture()
-            } label: {
-                ZStack {
-                    if viewModel.isRecording && !reduceMotion {
-                        // 用 PhaseAnimator 做向外扩散的脉冲（iOS 17+，reduce motion 下隐藏）
-                        Circle()
-                            .stroke(.red.opacity(0.5), lineWidth: 1.5)
-                            .frame(width: 36, height: 36)
-                            .phaseAnimator([0, 1]) { content, phase in
-                                content
-                                    .scaleEffect(1.0 + 0.6 * phase)
-                                    .opacity(1.0 - phase)
-                            } animation: { _ in
-                                .easeOut(duration: 1.2)
-                            }
-                            .accessibilityHidden(true)
-                    }
-                    Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "mic.fill")
-                        .font(.title3)
-                        .foregroundStyle(viewModel.isRecording ? .red : .primary)
-                        .frame(width: 36, height: 36)
-                        .contentTransition(.symbolEffect(.replace))
-                }
-            }
-            .accessibilityLabel(viewModel.isRecording ? "停止录音" : "开始语音转文字")
-            .accessibilityHint(viewModel.isRecording ? "点击停止录音并把识别结果加入草稿" : "录音时会持续把语音转成文字")
-
-            Button {
-                showPeoplePicker = true
-            } label: {
-                Image(systemName: viewModel.selectedPeople.isEmpty ? "person.2" : "person.2.fill")
-                    .font(.title3)
-                    .foregroundStyle(viewModel.selectedPeople.isEmpty ? .primary : .tint)
-                    .frame(width: 36, height: 36)
-            }
-            .accessibilityLabel("和谁在一起")
-            .accessibilityValue(viewModel.selectedPeople.isEmpty
-                                ? "未选择"
-                                : "已选 \(viewModel.selectedPeople.count) 人")
-
+            photoPickerButton
+            voiceCaptureButton
+            peoplePickerButton
             Spacer()
-
-            // 保存按钮 — 高度对齐到 36，启用态平滑过渡
-            Button {
-                viewModel.save(in: modelContext)
-            } label: {
-                Text("保存")
-                    .font(.subheadline.bold())
-                    .frame(height: 36)
-                    .padding(.horizontal, 18)
-                    .background(canSave ? AnyShapeStyle(.tint) : AnyShapeStyle(.ultraThinMaterial),
-                                in: Capsule())
-                    .foregroundStyle(canSave ? Color.white : Color.secondary)
-                    .animation(.easeInOut(duration: 0.2), value: canSave)
-            }
-            .disabled(!canSave)
-            .accessibilityHint(canSave ? "保存当前记忆到时光轴" : "需要先输入文字或添加附件")
+            saveButton
         }
         .padding()
         .background(.ultraThinMaterial)
+    }
+
+    // MARK: - 工具栏按钮拆分（避免编译器类型推断超时）
+
+    private var photoPickerButton: some View {
+        PhotosPicker(selection: $viewModel.pickerItems, maxSelectionCount: 9, matching: .any(of: [.images, .videos])) {
+            Image(systemName: "photo.on.rectangle")
+                .font(.title3)
+                .foregroundStyle(viewModel.processingMedia != nil ? Color.secondary : Color.primary)
+                .frame(width: 36, height: 36)
+        }
+        .disabled(viewModel.processingMedia != nil)
+        .accessibilityLabel("添加照片或视频")
+    }
+
+    private var voiceCaptureButton: some View {
+        Button {
+            viewModel.toggleVoiceCapture()
+        } label: {
+            ZStack {
+                if viewModel.isRecording && !reduceMotion {
+                    Circle()
+                        .stroke(.red.opacity(0.5), lineWidth: 1.5)
+                        .frame(width: 36, height: 36)
+                        .phaseAnimator([0, 1]) { content, phase in
+                            content
+                                .scaleEffect(1.0 + 0.6 * phase)
+                                .opacity(1.0 - phase)
+                        } animation: { _ in
+                            .easeOut(duration: 1.2)
+                        }
+                        .accessibilityHidden(true)
+                }
+                Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "mic.fill")
+                    .font(.title3)
+                    .foregroundStyle(viewModel.isRecording ? .red : .primary)
+                    .frame(width: 36, height: 36)
+                    .contentTransition(.symbolEffect(.replace))
+            }
+        }
+        .accessibilityLabel(viewModel.isRecording ? "停止录音" : "开始语音转文字")
+        .accessibilityHint(viewModel.isRecording ? "点击停止录音并把识别结果加入草稿" : "录音时会持续把语音转成文字")
+    }
+
+    private var peoplePickerButton: some View {
+        Button {
+            showPeoplePicker = true
+        } label: {
+            Image(systemName: viewModel.selectedPeople.isEmpty ? "person.2" : "person.2.fill")
+                .font(.title3)
+                .foregroundStyle(viewModel.selectedPeople.isEmpty ? Color.primary : Color.accentColor)
+                .frame(width: 36, height: 36)
+        }
+        .accessibilityLabel("和谁在一起")
+        .accessibilityValue(viewModel.selectedPeople.isEmpty
+                            ? "未选择"
+                            : "已选 \(viewModel.selectedPeople.count) 人")
+    }
+
+    private var saveButton: some View {
+        Button {
+            viewModel.save(in: modelContext)
+        } label: {
+            Text("保存")
+                .font(.subheadline.bold())
+                .frame(height: 36)
+                .padding(.horizontal, 18)
+                .background(canSave ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.ultraThinMaterial),
+                            in: Capsule())
+                .foregroundStyle(canSave ? Color.white : Color.secondary)
+                .animation(.easeInOut(duration: 0.2), value: canSave)
+        }
+        .disabled(!canSave)
+        .accessibilityHint(canSave ? "保存当前记忆到时光轴" : "需要先输入文字或添加附件")
     }
 
     private var canSave: Bool {

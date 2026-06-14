@@ -315,11 +315,12 @@ private struct SearchResultRow: View {
         var attributed = AttributedString(text)
         let tokens = keyword.split(whereSeparator: { $0.isWhitespace }).map(String.init)
         for token in tokens where !token.isEmpty {
-            var searchRange = attributed.startIndex..<attributed.endIndex
-            while let range = attributed.range(of: token, options: .caseInsensitive, locale: nil, in: searchRange) {
+            var searchStart = attributed.startIndex
+            while searchStart < attributed.endIndex,
+                  let range = attributed[searchStart...].range(of: token, options: .caseInsensitive) {
                 attributed[range].backgroundColor = .yellow.opacity(0.4)
                 attributed[range].foregroundColor = .primary
-                searchRange = range.upperBound..<attributed.endIndex
+                searchStart = range.upperBound
             }
         }
         return attributed

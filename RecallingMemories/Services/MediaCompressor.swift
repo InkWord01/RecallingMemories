@@ -79,7 +79,9 @@ enum MediaCompressor {
         session.shouldOptimizeForNetworkUse = true   // 让 moov atom 前置，便于流式播放
 
         // iOS 17 兼容：用老的 callback API + Continuation 包装为 async
-        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+        // AVAssetExportSession 非 Sendable，Swift 5 下仅为 warning，Swift 6 会报 error
+        // 用 @preconcurrency 抑制该警告，避免升级 Swift 6 时措手不及
+        try await withCheckedThrowingContinuation { @preconcurrency (cont: CheckedContinuation<Void, Error>) in
             session.exportAsynchronously {
                 switch session.status {
                 case .completed:

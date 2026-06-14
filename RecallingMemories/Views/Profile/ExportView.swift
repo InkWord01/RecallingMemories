@@ -43,59 +43,10 @@ struct ExportView: View {
 
     var body: some View {
         Form {
-            Section("格式") {
-                Picker("导出为", selection: $format) {
-                    ForEach(ExportFormat.allCases) { fmt in
-                        Label(fmt.displayName, systemImage: fmt.icon).tag(fmt)
-                    }
-                }
-                .pickerStyle(.inline)
-                .labelsHidden()
-            } footer: {
-                Text(format.description)
-            }
-
-            Section("时间范围") {
-                Picker("范围", selection: $range) {
-                    ForEach(TimeRange.allCases) { r in
-                        Text(r.displayName).tag(r)
-                    }
-                }
-                if range == .custom {
-                    DatePicker("起", selection: $customFrom, displayedComponents: .date)
-                    DatePicker("止", selection: $customTo, displayedComponents: .date)
-                }
-            }
-
-            Section {
-                HStack {
-                    Text("将导出")
-                    Spacer()
-                    Text("\(filteredMemories.count) 条记忆")
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            Section {
-                Button {
-                    Task { await runExport() }
-                } label: {
-                    HStack {
-                        if isExporting {
-                            ProgressView().controlSize(.small)
-                            Text("正在导出…")
-                        } else {
-                            Image(systemName: "square.and.arrow.up")
-                            Text("生成并分享")
-                                .bold()
-                        }
-                        Spacer()
-                    }
-                }
-                .disabled(filteredMemories.isEmpty || isExporting)
-            } footer: {
-                Text("生成的文件将存放在临时目录，关闭分享面板后可能被系统清理；建议直接分享到「文件」/iCloud Drive 长期保存。")
-            }
+            formatSection
+            rangeSection
+            summarySection
+            exportSection
         }
         .navigationTitle("数据导出")
         .navigationBarTitleDisplayMode(.inline)
@@ -115,6 +66,84 @@ struct ExportView: View {
         }
     }
 
+    // MARK: - 子视图（拆出帮编译器做类型推断）
+
+    private var formatSection: some View {
+        Section {
+            formatPicker
+        } header: {
+            Text("格式")
+        } footer: {
+            Text(format.description)
+        }
+    }
+
+    private var formatPicker: some View {
+        Picker("导出为", selection: $format) {
+            ForEach(ExportFormat.allCases) { fmt in
+                Label(fmt.displayName, systemImage: fmt.icon).tag(fmt)
+            }
+        }
+        .pickerStyle(.inline)
+        .labelsHidden()
+    }
+
+    private var rangeSection: some View {
+        Section {
+            rangePicker
+        } header: {
+            Text("时间范围")
+        }
+    }
+
+    private var rangePicker: some View {
+        Group {
+            Picker("范围", selection: $range) {
+                ForEach(TimeRange.allCases) { r in
+                    Text(r.displayName).tag(r)
+                }
+            }
+            if range == .custom {
+                DatePicker("起", selection: $customFrom, displayedComponents: .date)
+                DatePicker("止", selection: $customTo, displayedComponents: .date)
+            }
+        }
+    }
+
+    private var summarySection: some View {
+        Section {
+            HStack {
+                Text("将导出")
+                Spacer()
+                Text("\(filteredMemories.count) 条记忆")
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var exportSection: some View {
+        Section {
+            Button {
+                Task { await runExport() }
+            } label: {
+                HStack {
+                    if isExporting {
+                        ProgressView().controlSize(.small)
+                        Text("正在导出…")
+                    } else {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("生成并分享")
+                            .bold()
+                    }
+                    Spacer()
+                }
+            }
+            .disabled(filteredMemories.isEmpty || isExporting)
+        } footer: {
+            Text("生成的文件将存放在临时目录，关闭分享面板后可能被系统清理；建议直接分享到「文件」/iCloud Drive 长期保存。")
+        }
+    }
+
     // MARK: - 导出执行
 
     @MainActor
@@ -125,7 +154,6 @@ struct ExportView: View {
         let memories = filteredMemories
         let stamp = stampString()
 
-        // 让 SwiftUI 先把 ProgressView 渲染出来（出让一帧），再开始重 IO
         await Task.yield()
 
         do {

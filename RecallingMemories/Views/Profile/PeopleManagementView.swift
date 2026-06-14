@@ -271,29 +271,7 @@ private struct MergeView: View {
 
                 Section("选择要保留的条目") {
                     ForEach(context.candidates) { person in
-                        Button {
-                            keeperID = person.id
-                        } label: {
-                            HStack {
-                                Image(systemName: keeperID == person.id
-                                      ? "largecircle.fill.circle"
-                                      : "circle")
-                                    .foregroundStyle(keeperID == person.id ? .tint : .secondary)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(person.name)
-                                    Text("\(memoryCount(for: person)) 条记忆")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                    if person.contactIdentifier != nil {
-                                        Label("已关联通讯录", systemImage: "person.crop.circle")
-                                            .font(.caption2)
-                                            .foregroundStyle(.tint)
-                                    }
-                                }
-                                Spacer()
-                            }
-                        }
-                        .buttonStyle(.plain)
+                        mergeCandidateRow(person)
                     }
                 }
             }
@@ -319,6 +297,39 @@ private struct MergeView: View {
                     let rc = memoryCount(for: rhs)
                     if lc != rc { return lc > rc }
                     return (lhs.contactIdentifier != nil) && (rhs.contactIdentifier == nil)
+                }
+                keeperID = sorted.first?.id
+            }
+        }
+    }
+
+    // MARK: - 子视图
+
+    @ViewBuilder
+    private func mergeCandidateRow(_ person: Person) -> some View {
+        let isSelected = keeperID == person.id
+        Button {
+            keeperID = person.id
+        } label: {
+            HStack {
+                Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
+                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(person.name)
+                    Text("\(memoryCount(for: person)) 条记忆")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if person.contactIdentifier != nil {
+                        Label("已关联通讯录", systemImage: "person.crop.circle")
+                            .font(.caption2)
+                            .foregroundStyle(Color.accentColor)
+                    }
+                }
+                Spacer()
+            }
+        }
+        .buttonStyle(.plain)
+    }
                 }
                 keeperID = sorted.first?.id
             }
