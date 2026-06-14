@@ -12,7 +12,7 @@ import SwiftData
 struct RecordView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = RecordViewModel()
-    @StateObject private var router = AppRouter.shared
+    @ObservedObject private var router = AppRouter.shared
 
     @FocusState private var isInputFocused: Bool
     @State private var showPeoplePicker = false

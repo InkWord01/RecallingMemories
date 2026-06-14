@@ -10,7 +10,7 @@ import SwiftData
 
 struct NotificationSettingsView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var service = NotificationService.shared
+    @ObservedObject private var service = NotificationService.shared
     @Query(sort: \Memory.createdAt, order: .reverse) private var allMemories: [Memory]
 
     @State private var dailyTime: Date = NotificationSettingsView.makeTime(hour: 9)

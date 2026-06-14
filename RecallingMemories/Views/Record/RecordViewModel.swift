@@ -38,6 +38,8 @@ struct SpacetimeAnchor: Equatable {
             && lhs.locationName == rhs.locationName
             && lhs.weatherIcon == rhs.weatherIcon
             && lhs.moodTag == rhs.moodTag
+            && lhs.coordinate?.lat == rhs.coordinate?.lat
+            && lhs.coordinate?.lon == rhs.coordinate?.lon
     }
 }
 

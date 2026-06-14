@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct RootView: View {
-    @StateObject private var router = AppRouter.shared
+    @ObservedObject private var router = AppRouter.shared
     @Query(sort: \Memory.createdAt, order: .reverse) private var allMemories: [Memory]
 
     @State private var selectedTab: Tab = .record
