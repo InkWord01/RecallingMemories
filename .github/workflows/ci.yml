@@ -43,7 +43,7 @@ jobs:
 
   # ─── 构建 + 测试：仅 Mac runner ───
   build-and-test:
-    runs-on: macos-15   # 升级到 macos-15，预装 Xcode 16
+    runs-on: macos-14   # macos-14 镜像同时预装 Xcode 15 + 16，下面 Select Xcode 主动挑 16
     needs: lint
     timeout-minutes: 25
 
@@ -51,21 +51,27 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Select Xcode
-        # 优先 Xcode 16（XcodeGen 新版生成的 pbxproj 格式 v77 需要 Xcode 16+）
-        # 回退 Xcode 15 仅作 last resort
+        # 主动挑 Xcode 16+（XcodeGen 新版生成的 pbxproj 格式 v77 需要 Xcode 16）
         run: |
+          echo "── 可用的 Xcode 版本 ──"
+          ls -d /Applications/Xcode*.app 2>/dev/null || echo "(无)"
+
           AVAILABLE=""
           for dir in /Applications/Xcode_16*.app /Applications/Xcode_15*.app; do
-            if compgen -G "$dir" > /dev/null; then
-              AVAILABLE=$(ls -d $dir 2>/dev/null | sort -V | tail -1)
-              [ -n "$AVAILABLE" ] && break
-            fi
+            for path in $dir; do
+              if [ -d "$path" ]; then
+                AVAILABLE="$path"
+              fi
+            done
+            [ -n "$AVAILABLE" ] && break
           done
+
           if [ -z "$AVAILABLE" ]; then
             echo "::error::未找到任何 Xcode"
             exit 1
           fi
-          echo "Selected: $AVAILABLE"
+          echo "── 选用 ──"
+          echo "$AVAILABLE"
           sudo xcode-select -s "$AVAILABLE"
 
       - name: Show Xcode version
