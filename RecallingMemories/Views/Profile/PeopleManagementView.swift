@@ -330,11 +330,6 @@ private struct MergeView: View {
         }
         .buttonStyle(.plain)
     }
-                }
-                keeperID = sorted.first?.id
-            }
-        }
-    }
 
     private func memoryCount(for person: Person) -> Int {
         allMemories.filter { $0.people.contains(where: { $0.id == person.id }) }.count

@@ -84,10 +84,11 @@ enum MarkdownExporter {
     private static func archiveDirectoryAsZip(root: URL, stamp: String) throws -> URL {
         let fm = FileManager.default
         let coordinator = NSFileCoordinator()
-        var coordError: NSError?
+        let coordError: NSError?
         var resultURL: URL?
         var caughtError: Error?
 
+        let tempDir = fm.temporaryDirectory   // 提前提取，避免在 @Sendable 闭包内捕获非 Sendable 的 fm
         let intent = NSFileAccessIntent.readingIntent(with: root, options: [.forUploading])
         let queue = OperationQueue()
         queue.qualityOfService = .userInitiated
@@ -100,10 +101,10 @@ enum MarkdownExporter {
                 return
             }
             do {
-                let dst = fm.temporaryDirectory
+                let dst = tempDir
                     .appendingPathComponent("拾忆_\(stamp).zip")
-                try? fm.removeItem(at: dst)
-                try fm.moveItem(at: intent.url, to: dst)
+                try? FileManager.default.removeItem(at: dst)
+                try FileManager.default.moveItem(at: intent.url, to: dst)
                 resultURL = dst
             } catch {
                 caughtError = error

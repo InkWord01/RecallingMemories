@@ -253,13 +253,15 @@ struct RecordView: View {
     // MARK: - 工具栏按钮拆分（避免编译器类型推断超时）
 
     private var photoPickerButton: some View {
-        PhotosPicker(selection: $viewModel.pickerItems, maxSelectionCount: 9, matching: .any(of: [.images, .videos])) {
+        // 提前捕获到局部变量，避免在 PhotosPicker label 闭包中访问 MainActor 属性
+        let isProcessing = viewModel.processingMedia != nil
+        return PhotosPicker(selection: $viewModel.pickerItems, maxSelectionCount: 9, matching: .any(of: [.images, .videos])) {
             Image(systemName: "photo.on.rectangle")
                 .font(.title3)
-                .foregroundStyle(viewModel.processingMedia != nil ? Color.secondary : Color.primary)
+                .foregroundStyle(isProcessing ? Color.secondary : Color.primary)
                 .frame(width: 36, height: 36)
         }
-        .disabled(viewModel.processingMedia != nil)
+        .disabled(isProcessing)
         .accessibilityLabel("添加照片或视频")
     }
 

@@ -14,9 +14,9 @@ final class NotificationService: NSObject, ObservableObject {
     static let shared = NotificationService()
 
     /// 通知分类：用于点击跳转到详情
-    static let onThisDayCategory = "ON_THIS_DAY"
+    nonisolated static let onThisDayCategory = "ON_THIS_DAY"
     /// userInfo 中携带的 Memory.id
-    static let memoryIDKey = "memoryID"
+    nonisolated static let memoryIDKey = "memoryID"
 
     @Published private(set) var authorizationStatus: UNAuthorizationStatus = .notDetermined
 
