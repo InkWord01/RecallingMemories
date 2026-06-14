@@ -2,9 +2,13 @@
 //  RecordViewModel.swift
 //  拾忆
 //
+//  极速记录页的视图模型：草稿、时空锚点、媒体附件、语音转写、保存
+//
 
 import Foundation
 import SwiftUI
+import SwiftData
+import PhotosUI
 
 /// 时空锚点（自动捕获的时间 + 位置 + 天气 + 情绪）
 struct SpacetimeAnchor: Equatable {
@@ -44,38 +48,125 @@ final class RecordViewModel: ObservableObject {
     @Published var attachments: [Attachment] = []
     @Published var spacetimeAnchor: SpacetimeAnchor?
 
-    /// 捕获当前时空锚点（时间 + 位置 + 天气）
+    /// PhotosPicker 选中的项（绑定到 View）
+    @Published var pickerItems: [PhotosPickerItem] = []
+
+    /// 用户从极简情绪标签中选择
+    @Published var selectedMood: String?
+
+    /// 是否正在录音转写
+    @Published private(set) var isRecording = false
+
+    /// 错误提示
+    @Published var errorMessage: String?
+
+    /// 极简情绪标签
+    let moodOptions: [String] = ["💡顿悟", "🔥激动", "😌平静", "🌙怅然", "🌿温柔"]
+
+    private let speech = SpeechService.shared
+    private let location = LocationService.shared
+
+    // MARK: - 时空锚点
+
+    /// 捕获当前时空锚点（时间 + 位置）；位置失败不阻塞，时间永远可用
     func captureSpacetimeAnchor() {
-        // TODO: 接入 LocationService / WeatherService
-        spacetimeAnchor = SpacetimeAnchor(
-            timestamp: Date(),
-            locationName: nil,
-            coordinate: nil,
-            weatherIcon: nil,
-            moodTag: nil
+        var anchor = SpacetimeAnchor(timestamp: Date())
+        spacetimeAnchor = anchor
+
+        Task {
+            do {
+                let loc = try await location.requestCurrentLocation()
+                anchor.coordinate = (loc.coordinate.latitude, loc.coordinate.longitude)
+                if let poi = try? await location.reverseGeocode(loc) {
+                    anchor.locationName = poi
+                }
+                self.spacetimeAnchor = anchor
+            } catch {
+                // 静默：MVP 阶段定位失败不打扰用户
+            }
+        }
+    }
+
+    // MARK: - 媒体
+
+    /// PhotosPicker 选中变化时调用
+    func handlePickerChange() async {
+        guard !pickerItems.isEmpty else { return }
+        for item in pickerItems {
+            do {
+                let attachment = try await AttachmentStore.persist(item)
+                attachments.append(attachment)
+            } catch {
+                errorMessage = "媒体保存失败：\(error.localizedDescription)"
+            }
+        }
+        pickerItems.removeAll()
+    }
+
+    func removeAttachment(_ attachment: Attachment) {
+        attachments.removeAll { $0.id == attachment.id }
+        // 删除磁盘文件
+        try? FileManager.default.removeItem(at: AttachmentStore.url(for: attachment))
+    }
+
+    // MARK: - 语音转写
+
+    func toggleVoiceCapture() {
+        if isRecording {
+            speech.stop()
+            // 将识别出的文本拼接到草稿
+            let recognized = speech.transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !recognized.isEmpty {
+                draftText = draftText.isEmpty ? recognized : "\(draftText) \(recognized)"
+            }
+            isRecording = false
+        } else {
+            Task {
+                guard await speech.requestAuthorization() else {
+                    errorMessage = "需要语音识别与麦克风权限"
+                    return
+                }
+                do {
+                    try speech.start()
+                    isRecording = true
+                } catch {
+                    errorMessage = "录音启动失败：\(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    // MARK: - 保存
+
+    /// 持久化为 Memory，写入 SwiftData
+    func save(in context: ModelContext) {
+        guard !(draftText.isEmpty && attachments.isEmpty) else { return }
+
+        let memory = Memory(
+            text: draftText,
+            createdAt: spacetimeAnchor?.timestamp ?? Date(),
+            locationName: spacetimeAnchor?.locationName,
+            latitude: spacetimeAnchor?.coordinate?.lat,
+            longitude: spacetimeAnchor?.coordinate?.lon,
+            weatherIcon: spacetimeAnchor?.weatherIcon,
+            moodTag: selectedMood,
+            attachments: attachments,
+            tags: []
         )
+
+        context.insert(memory)
+        do {
+            try context.save()
+            reset()
+        } catch {
+            errorMessage = "保存失败：\(error.localizedDescription)"
+        }
     }
 
-    func openCamera() {
-        // TODO: 调用 PhotosUI / AVFoundation
-    }
-
-    func openPhotoLibrary() {
-        // TODO: PHPickerViewController
-    }
-
-    func startVoiceCapture() {
-        // TODO: Speech Framework
-    }
-
-    func tagPeople() {
-        // TODO: 通讯录或自定义标签
-    }
-
-    func save() {
-        // TODO: 通过 SwiftData modelContext 持久化
-        print("保存记录：\(draftText)")
+    private func reset() {
         draftText = ""
         attachments = []
+        selectedMood = nil
+        captureSpacetimeAnchor()
     }
 }

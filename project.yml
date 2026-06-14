@@ -43,6 +43,7 @@ targets:
         NSMicrophoneUsageDescription: 拾忆需要麦克风权限，用于录制视频与语音转文字。
         NSSpeechRecognitionUsageDescription: 拾忆需要语音识别权限，将你的语音快速转为文字。
         NSContactsUsageDescription: 拾忆需要通讯录权限，用于添加「和谁在一起」标签。
+        NSAppleMusicUsageDescription: 拾忆不会使用音乐库，仅为系统兼容声明。
         LSApplicationQueriesSchemes:
           - weixin
           - weixinULAPI
