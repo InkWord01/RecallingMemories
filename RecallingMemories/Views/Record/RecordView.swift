@@ -313,8 +313,7 @@ private struct AsyncThumbnailView: View {
             }
         }
         .task(id: attachment.id) {
-            let url = AttachmentStore.url(for: attachment)
-            if let data = try? Data(contentsOf: url),
+            if let data = AttachmentStore.loadData(for: attachment),
                let img = UIImage(data: data) {
                 self.image = img
             }
@@ -324,5 +323,5 @@ private struct AsyncThumbnailView: View {
 
 #Preview {
     RecordView()
-        .modelContainer(for: [Memory.self, Person.self], inMemory: true)
+        .modelContainer(for: [Memory.self, Person.self, Attachment.self], inMemory: true)
 }

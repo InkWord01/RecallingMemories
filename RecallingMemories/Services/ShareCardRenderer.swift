@@ -195,7 +195,8 @@ private struct MinimalCard: View {
 
     private func firstImage() -> UIImage? {
         guard let first = memory.attachments.first(where: { $0.kind != .audio }) else { return nil }
-        return UIImage(contentsOfFile: AttachmentStore.url(for: first).path)
+        guard let data = AttachmentStore.loadData(for: first) else { return nil }
+        return UIImage(data: data)
     }
 }
 
@@ -273,7 +274,8 @@ private struct PolaroidCard: View {
 
     private func firstImage() -> UIImage? {
         guard let first = memory.attachments.first(where: { $0.kind != .audio }) else { return nil }
-        return UIImage(contentsOfFile: AttachmentStore.url(for: first).path)
+        guard let data = AttachmentStore.loadData(for: first) else { return nil }
+        return UIImage(data: data)
     }
 }
 

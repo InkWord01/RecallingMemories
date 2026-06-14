@@ -37,7 +37,8 @@ final class Memory {
     @Relationship(deleteRule: .nullify, inverse: \Person.memories)
     var people: [Person] = []
 
-    /// 媒体附件 (照片/视频本地路径或 CloudKit assetID)
+    /// 媒体附件 —— 删除 Memory 时级联删除附件
+    @Relationship(deleteRule: .cascade, inverse: \Attachment.memory)
     var attachments: [Attachment] = []
 
     /// 自定义标签
@@ -52,7 +53,6 @@ final class Memory {
         longitude: Double? = nil,
         weatherIcon: String? = nil,
         moodTag: String? = nil,
-        attachments: [Attachment] = [],
         tags: [String] = []
     ) {
         self.id = id
@@ -63,28 +63,8 @@ final class Memory {
         self.longitude = longitude
         self.weatherIcon = weatherIcon
         self.moodTag = moodTag
-        self.attachments = attachments
         self.tags = tags
     }
 }
 
 extension Memory: Identifiable {}
-
-/// 媒体附件
-struct Attachment: Codable, Hashable, Identifiable {
-    var id: UUID = UUID()
-    var kind: Kind
-    /// 本地相对路径或 iCloud assetIdentifier
-    var path: String
-    /// 缩略图相对路径
-    var thumbnailPath: String?
-    /// 时长（秒），仅视频
-    var duration: TimeInterval?
-
-    enum Kind: String, Codable {
-        case photo
-        case livePhoto
-        case video
-        case audio
-    }
-}

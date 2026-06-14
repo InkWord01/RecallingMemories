@@ -244,13 +244,12 @@ private struct ClusterMemoryRow: View {
     }
 
     private func loadImage(_ attachment: Attachment) -> UIImage? {
-        let url = AttachmentStore.url(for: attachment)
-        guard let data = try? Data(contentsOf: url) else { return nil }
+        guard let data = AttachmentStore.loadData(for: attachment) else { return nil }
         return UIImage(data: data)
     }
 }
 
 #Preview {
     MapView()
-        .modelContainer(for: [Memory.self, Person.self], inMemory: true)
+        .modelContainer(for: [Memory.self, Person.self, Attachment.self], inMemory: true)
 }

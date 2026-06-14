@@ -57,6 +57,18 @@ struct CloudSyncSettingsView: View {
                 Text("更改后需重启拾忆才能生效。SwiftData 不支持运行时切换存储模式。")
             }
 
+            // 媒体同步开关 —— 仅在主开关已启用时显示
+            if service.isEnabled {
+                Section {
+                    Toggle("同步图片附件", isOn: Binding(
+                        get: { service.includeMedia },
+                        set: { service.setIncludeMedia($0) }
+                    ))
+                } footer: {
+                    Text("开启后，新保存的照片会随记忆一起上传到 iCloud（视频暂不上传，体积过大）。已上传的图片可在其它设备自动下载。流量与 iCloud 储存空间由你 Apple ID 计费。")
+                }
+            }
+
             // iCloud 账号状态
             Section("iCloud 账号") {
                 HStack {
@@ -108,8 +120,8 @@ struct CloudSyncSettingsView: View {
 
             Section("说明") {
                 bullet("数据存储在你的 Apple ID 私有 iCloud 数据库，拾忆服务器看不到。")
-                bullet("同步范围：文字、时间、地点、人物标签、情绪。")
-                bullet("⚠️ 媒体附件（照片 / 视频）当前仍存本机，跨设备暂不同步。")
+                bullet("默认同步范围：文字、时间、地点、人物标签、情绪。")
+                bullet("开启「同步图片附件」后，新保存的照片也会随记忆上传；视频暂不上传。")
                 bullet("撤回授权或关闭同步：本机数据保留；iCloud 副本继续存在直到你在系统设置「管理 iCloud 储存」中删除。")
             }
             .font(.footnote)

@@ -41,7 +41,7 @@ enum LegalDocuments {
                 body: [
                     .paragraph("默认情况下，你的所有记忆都存储在 App 沙盒中，受 iOS 系统加密保护。卸载 App 即可彻底删除。"),
                     .paragraph("若你主动开启 iCloud 同步，记忆会通过 Apple 提供的 CloudKit 通道传输到你 Apple ID 的私有数据库。拾忆开发者无法访问这些数据。"),
-                    .emphasis("MVP 阶段，媒体附件（照片 / 视频）暂不参与云同步，仅文字、时间、地点、人物等元数据会上云。")
+                    .emphasis("图片附件可在云同步设置中单独开启同步，视频暂不上传。媒体的开关与主同步开关独立，可随时关闭。")
                 ]
             ),
             .init(

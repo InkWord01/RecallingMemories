@@ -17,7 +17,7 @@ enum TestFactory {
 
     /// 每次调用返回一个全新的 in-memory 容器（独立隔离，避免测试间污染）
     static func makeContainer() -> ModelContainer {
-        let schema = Schema([Memory.self, Person.self])
+        let schema = Schema([Memory.self, Person.self, Attachment.self])
         let config = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: true,
@@ -46,11 +46,15 @@ enum TestFactory {
             latitude: lat,
             longitude: lon,
             moodTag: mood,
-            attachments: attachments,
             tags: tags
         )
         memory.people = people
         context.insert(memory)
+        // Attachment 是 @Model，需要 insert 到 context 并设关系
+        for attachment in attachments {
+            context.insert(attachment)
+            attachment.memory = memory
+        }
         return memory
     }
 

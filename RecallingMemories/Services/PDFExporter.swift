@@ -174,7 +174,8 @@ private struct MemoryBlock: View {
 
             // 首张配图
             if let first = memory.attachments.first(where: { $0.kind != .audio }),
-               let image = UIImage(contentsOfFile: AttachmentStore.url(for: first).path) {
+               let data = AttachmentStore.loadData(for: first),
+               let image = UIImage(data: data) {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()

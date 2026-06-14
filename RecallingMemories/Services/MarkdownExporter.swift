@@ -158,12 +158,17 @@ enum MarkdownExporter {
         // 附件
         if !memory.attachments.isEmpty {
             for attachment in memory.attachments {
-                let src = AttachmentStore.url(for: attachment)
                 let mdPath: String
                 if let dir = attachmentsDir {
                     let dst = dir.appendingPathComponent(attachment.path)
                     if !FileManager.default.fileExists(atPath: dst.path) {
-                        try? FileManager.default.copyItem(at: src, to: dst)
+                        // 优先从本地复制；本地缺失则尝试 imageData 写一份
+                        let src = AttachmentStore.url(for: attachment)
+                        if FileManager.default.fileExists(atPath: src.path) {
+                            try? FileManager.default.copyItem(at: src, to: dst)
+                        } else if let data = attachment.imageData {
+                            try? data.write(to: dst, options: .atomic)
+                        }
                     }
                     mdPath = "attachments/\(attachment.path)"
                 } else {

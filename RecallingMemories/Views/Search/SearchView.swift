@@ -459,5 +459,5 @@ private struct FilterSheet: View {
 
 #Preview {
     SearchView()
-        .modelContainer(for: [Memory.self, Person.self], inMemory: true)
+        .modelContainer(for: [Memory.self, Person.self, Attachment.self], inMemory: true)
 }

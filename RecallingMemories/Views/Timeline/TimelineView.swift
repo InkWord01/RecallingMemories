@@ -117,9 +117,9 @@ struct TimelineView: View {
     }
 
     private func delete(_ memory: Memory) {
-        // 删除磁盘上的附件文件
+        // 删除磁盘上的附件文件（SwiftData cascade 会删 Attachment 模型，但磁盘 Documents/Attachments/ 不会自动清）
         for attachment in memory.attachments {
-            try? FileManager.default.removeItem(at: AttachmentStore.url(for: attachment))
+            AttachmentStore.deleteFile(for: attachment)
         }
         modelContext.delete(memory)
         try? modelContext.save()
@@ -269,8 +269,7 @@ private struct AsyncThumbnailView: View {
             }
         }
         .task(id: attachment.id) {
-            let url = AttachmentStore.url(for: attachment)
-            if let data = try? Data(contentsOf: url),
+            if let data = AttachmentStore.loadData(for: attachment),
                let img = UIImage(data: data) {
                 self.image = img
             }
@@ -280,5 +279,5 @@ private struct AsyncThumbnailView: View {
 
 #Preview {
     TimelineView()
-        .modelContainer(for: [Memory.self, Person.self], inMemory: true)
+        .modelContainer(for: [Memory.self, Person.self, Attachment.self], inMemory: true)
 }

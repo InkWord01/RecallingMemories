@@ -23,9 +23,13 @@ final class CloudSyncService: ObservableObject {
     /// 用户偏好 key
     private static let enabledKey = "RM.cloudSync.enabled"
     private static let agreementKey = "RM.cloudSync.agreedAt"
+    private static let mediaKey = "RM.cloudSync.includeMedia"
 
     /// 当前是否启用 — 只读自 UserDefaults
     @Published private(set) var isEnabled: Bool
+
+    /// 是否同步媒体附件（图片）—— 默认关闭（耗流量）
+    @Published private(set) var includeMedia: Bool
 
     /// iCloud 账号状态
     @Published private(set) var accountStatus: CKAccountStatus = .couldNotDetermine
@@ -42,6 +46,7 @@ final class CloudSyncService: ObservableObject {
 
     private init() {
         self.isEnabled = UserDefaults.standard.bool(forKey: Self.enabledKey)
+        self.includeMedia = UserDefaults.standard.bool(forKey: Self.mediaKey)
         Task { await refreshAccountStatus() }
     }
 
@@ -52,6 +57,12 @@ final class CloudSyncService: ObservableObject {
     func setEnabled(_ enabled: Bool) {
         UserDefaults.standard.set(enabled, forKey: Self.enabledKey)
         isEnabled = enabled
+    }
+
+    /// 切换是否同步媒体附件 —— 不需要重启 App，下次保存的附件就生效
+    func setIncludeMedia(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: Self.mediaKey)
+        includeMedia = value
     }
 
     /// 用户同意隐私条款
@@ -98,7 +109,7 @@ final class CloudSyncService: ObservableObject {
         let enabled = UserDefaults.standard.bool(forKey: enabledKey)
         let agreed = UserDefaults.standard.object(forKey: agreementKey) != nil
 
-        let schema = Schema([Memory.self, Person.self])
+        let schema = Schema([Memory.self, Person.self, Attachment.self])
         let configuration: ModelConfiguration
 
         if enabled && agreed {

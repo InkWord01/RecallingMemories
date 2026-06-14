@@ -440,5 +440,5 @@ private struct OrphansCleanupView: View {
 
 #Preview {
     NavigationStack { PeopleManagementView() }
-        .modelContainer(for: [Memory.self, Person.self], inMemory: true)
+        .modelContainer(for: [Memory.self, Person.self, Attachment.self], inMemory: true)
 }

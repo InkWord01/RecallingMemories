@@ -97,9 +97,11 @@ final class RecordViewModel: ObservableObject {
     /// PhotosPicker 选中变化时调用
     func handlePickerChange() async {
         guard !pickerItems.isEmpty else { return }
+        let includeCloudData = CloudSyncService.shared.isEnabled
+            && CloudSyncService.shared.includeMedia
         for item in pickerItems {
             do {
-                let attachment = try await AttachmentStore.persist(item)
+                let attachment = try await AttachmentStore.persist(item, includeCloudData: includeCloudData)
                 attachments.append(attachment)
             } catch {
                 errorMessage = "媒体保存失败：\(error.localizedDescription)"
@@ -110,8 +112,8 @@ final class RecordViewModel: ObservableObject {
 
     func removeAttachment(_ attachment: Attachment) {
         attachments.removeAll { $0.id == attachment.id }
-        // 删除磁盘文件
-        try? FileManager.default.removeItem(at: AttachmentStore.url(for: attachment))
+        // 删除磁盘文件（imageData 字段会随 Attachment 模型一起被丢弃）
+        AttachmentStore.deleteFile(for: attachment)
     }
 
     // MARK: - 语音转写
@@ -155,12 +157,17 @@ final class RecordViewModel: ObservableObject {
             longitude: spacetimeAnchor?.coordinate?.lon,
             weatherIcon: spacetimeAnchor?.weatherIcon,
             moodTag: selectedMood,
-            attachments: attachments,
             tags: []
         )
         memory.people = selectedPeople
 
         context.insert(memory)
+        // 附件必须先 insert 到 context，再设 inverse 关系
+        for attachment in attachments {
+            context.insert(attachment)
+            attachment.memory = memory
+        }
+
         do {
             try context.save()
             // 通知 Widget 数据已变化
