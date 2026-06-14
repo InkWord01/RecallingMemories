@@ -13,6 +13,7 @@ struct TimelineView: View {
     @Query(sort: \Memory.createdAt, order: .reverse) private var memories: [Memory]
 
     @State private var selectedMemory: Memory?
+    @State private var showSearch = false
 
     var body: some View {
         NavigationStack {
@@ -28,9 +29,23 @@ struct TimelineView: View {
                 }
             }
             .navigationTitle("时光")
+            .toolbar {
+                if !memories.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showSearch = true
+                        } label: {
+                            Image(systemName: "magnifyingglass")
+                        }
+                    }
+                }
+            }
             .sheet(item: $selectedMemory) { memory in
                 MemoryDetailView(memory: memory)
                     .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $showSearch) {
+                SearchView()
             }
         }
     }
