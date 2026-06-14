@@ -104,3 +104,16 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.recallingmemories.app.widget
         TARGETED_DEVICE_FAMILY: "1"
+
+  RecallingMemoriesTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: RecallingMemoriesTests
+    dependencies:
+      - target: RecallingMemories
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.recallingmemories.app.tests
+        BUNDLE_LOADER: $(TEST_HOST)
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/RecallingMemories.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RecallingMemories

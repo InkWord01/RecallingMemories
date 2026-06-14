@@ -164,6 +164,31 @@ URL: https://github.com/Tencent/WeChatOpenSDK-Swift
 
 ---
 
+## 7.5 跑单元测试
+
+仓库自带 `RecallingMemoriesTests` target，覆盖 4 个纯函数模块：
+
+| 测试文件 | 覆盖 |
+|---|---|
+| `OnThisDayMatcherTests` | 那年今日匹配逻辑（闰年 / 排序 / 未来时间防御） |
+| `TimelineGroupingTests` | 时光轴日期分组（今天 / 昨天 / 本周 / 跨年） |
+| `LocationClusteringTests` | 地图聚类（精度 / 排序 / 同坐标不同名） |
+| `MemorySearchTests` | 多维搜索（关键词 / 评分 / 日期范围 / 人物 AND） |
+
+**Xcode 中**：⌘U 一键全跑
+
+**命令行**：
+```bash
+xcodebuild test \
+  -project RecallingMemories.xcodeproj \
+  -scheme RecallingMemories \
+  -destination 'platform=iOS Simulator,name=iPhone 15'
+```
+
+> 测试用 `TestFactory.makeContainer()` 拉起一个 in-memory `ModelContainer`，每个用例隔离，不污染本地 SwiftData 数据库。
+
+---
+
 ## 8. TestFlight 发布
 
 1. **App Store Connect** 创建应用
