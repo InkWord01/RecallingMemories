@@ -6,9 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RootView: View {
+    @StateObject private var router = AppRouter.shared
+    @Query(sort: \Memory.createdAt, order: .reverse) private var allMemories: [Memory]
+
     @State private var selectedTab: Tab = .record
+    @State private var pendingMemory: Memory?
 
     enum Tab: Hashable {
         case record, timeline, map, profile
@@ -33,9 +38,26 @@ struct RootView: View {
                 .tag(Tab.profile)
         }
         .tint(.white)
+        // 路由：通知 / 小组件等外部入口
+        .onChange(of: router.requestedTab) { _, requested in
+            if let requested {
+                selectedTab = requested
+                router.requestedTab = nil
+            }
+        }
+        .onChange(of: router.pendingMemoryID) { _, id in
+            guard let id else { return }
+            pendingMemory = allMemories.first { $0.id == id }
+            router.pendingMemoryID = nil
+        }
+        .sheet(item: $pendingMemory) { memory in
+            MemoryDetailView(memory: memory)
+                .presentationDetents([.medium, .large])
+        }
     }
 }
 
 #Preview {
     RootView()
+        .modelContainer(for: Memory.self, inMemory: true)
 }

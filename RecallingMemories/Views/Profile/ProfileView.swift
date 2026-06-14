@@ -9,9 +9,25 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section("回忆") {
+                    NavigationLink {
+                        OnThisDayView()
+                    } label: {
+                        Label("那年今日", systemImage: "calendar.badge.clock")
+                    }
+                }
+
                 Section("账号") {
                     Button("微信登录") {
                         // TODO: WXApi.sendAuthReq
+                    }
+                }
+
+                Section("偏好") {
+                    NavigationLink {
+                        NotificationSettingsView()
+                    } label: {
+                        Label("通知与推送", systemImage: "bell.badge")
                     }
                 }
 
