@@ -83,8 +83,21 @@ struct ProfileView: View {
                 }
 
                 Section("关于") {
-                    NavigationLink("隐私协议") { Text("隐私协议") }
-                    NavigationLink("用户协议") { Text("用户协议") }
+                    NavigationLink {
+                        LegalDocumentView(document: LegalDocuments.privacy)
+                    } label: {
+                        Label("隐私协议", systemImage: "hand.raised.fill")
+                    }
+                    NavigationLink {
+                        LegalDocumentView(document: LegalDocuments.terms)
+                    } label: {
+                        Label("用户协议", systemImage: "doc.text.fill")
+                    }
+                    NavigationLink {
+                        LegalDocumentView(document: LegalDocuments.acknowledgements)
+                    } label: {
+                        Label("第三方致谢", systemImage: "heart.text.square")
+                    }
                     HStack {
                         Text("版本")
                         Spacer()
