@@ -79,15 +79,15 @@ enum MediaCompressor {
         session.shouldOptimizeForNetworkUse = true   // 让 moov atom 前置，便于流式播放
 
         // iOS 17 兼容：用老的 callback API + Continuation 包装为 async
-        // AVAssetExportSession 非 Sendable，Swift 5 下仅为 warning，Swift 6 会报 error
-        // 用 @preconcurrency 抑制该警告，避免升级 Swift 6 时措手不及
+        // AVAssetExportSession 非 Sendable，用 nonisolated(unsafe) 告知编译器跨 Sendable 边界安全
+        nonisolated(unsafe) let exportSession = session
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-            session.exportAsynchronously {
-                switch session.status {
+            exportSession.exportAsynchronously {
+                switch exportSession.status {
                 case .completed:
                     cont.resume()
                 case .failed:
-                    cont.resume(throwing: session.error ?? NSError(
+                    cont.resume(throwing: exportSession.error ?? NSError(
                         domain: "MediaCompressor", code: -2,
                         userInfo: [NSLocalizedDescriptionKey: "视频压缩失败"]))
                 case .cancelled:
@@ -97,7 +97,7 @@ enum MediaCompressor {
                 default:
                     cont.resume(throwing: NSError(
                         domain: "MediaCompressor", code: -4,
-                        userInfo: [NSLocalizedDescriptionKey: "视频压缩未完成（状态：\(session.status.rawValue)）"]))
+                        userInfo: [NSLocalizedDescriptionKey: "视频压缩未完成（状态：\(exportSession.status.rawValue)）"]))
                 }
             }
         }

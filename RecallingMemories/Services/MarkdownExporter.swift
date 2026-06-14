@@ -84,7 +84,7 @@ enum MarkdownExporter {
     private static func archiveDirectoryAsZip(root: URL, stamp: String) throws -> URL {
         let fm = FileManager.default
         let coordinator = NSFileCoordinator()
-        let coordError: NSError?
+        var coordError: NSError?
         var resultURL: URL?
         var caughtError: Error?
 
