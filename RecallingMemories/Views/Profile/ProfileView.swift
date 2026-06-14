@@ -71,7 +71,11 @@ struct ProfileView: View {
 
                 Section("数据") {
                     NavigationLink("云同步设置") { Text("云同步（Pro）") }
-                    NavigationLink("数据导出") { Text("导出 PDF / Markdown 时光书（Pro）") }
+                    NavigationLink {
+                        ExportView()
+                    } label: {
+                        Label("数据导出", systemImage: "square.and.arrow.up.on.square")
+                    }
                 }
 
                 Section("关于") {
