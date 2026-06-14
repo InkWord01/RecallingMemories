@@ -1,0 +1,119 @@
+# GitHub Actions CI — 拾忆 RecallingMemories
+#
+# 每次 push / PR 自动跑：
+#   1. lint：YAML / shell 语法快速检查（任意 runner）
+#   2. build：在 macOS runner 上 xcodegen → build → test
+#
+# Mac runner 计费贵，仅在 PR / main push 时跑。
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+# 只保留最新一次运行（同一 PR 多次推送时取消旧 job）
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── 轻量 lint：跑在 ubuntu，零成本 ───
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate project.yml syntax
+        run: |
+          python3 -c "import yaml; yaml.safe_load(open('project.yml'))"
+
+      - name: Shellcheck tools/
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+          find tools -name '*.sh' -print0 | xargs -0 shellcheck
+
+      - name: Verify SVG well-formed
+        run: |
+          for svg in design/*.svg; do
+            xmllint --noout "$svg"
+          done
+
+  # ─── 构建 + 测试：仅 Mac runner ───
+  build-and-test:
+    runs-on: macos-14
+    needs: lint
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        # 用 runner 上预装的最新 Xcode 15.x；具体版本随 runner 镜像更新
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_15*.app | sort -V | tail -1)"
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install dependencies
+        run: |
+          brew install xcodegen librsvg
+          # xcpretty 多数 runner 已预装；缺失时降级为纯 xcodebuild 输出
+          gem install xcpretty || true
+
+      - name: Generate Asset Catalog binaries
+        run: bash tools/generate-icons.sh
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      # 构建主 App（不签名，CI 没有 provisioning profile）
+      - name: Build app
+        run: |
+          xcodebuild build \
+            -project RecallingMemories.xcodeproj \
+            -scheme RecallingMemories \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty --color
+          exit ${PIPESTATUS[0]}
+
+      # 跑单元测试
+      - name: Run unit tests
+        run: |
+          xcodebuild test \
+            -project RecallingMemories.xcodeproj \
+            -scheme RecallingMemories \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -configuration Debug \
+            -resultBundlePath TestResults.xcresult \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty --color --report junit
+          exit ${PIPESTATUS[0]}
+
+      # 失败时上传 xcresult 便于排查
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults.xcresult
+          path: TestResults.xcresult
+          retention-days: 7
+
+      # JUnit 报告（xcpretty 生成在 build/reports/junit.xml）
+      - name: Upload JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-report
+          path: build/reports/junit.xml
+          retention-days: 14
+          if-no-files-found: ignore

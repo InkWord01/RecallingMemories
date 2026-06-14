@@ -1,5 +1,7 @@
 # 拾忆 (RecallingMemories)
 
+[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+
 > 基于时空的灵感与记忆捕捉工具 — 一款极简、轻量的 iOS 端「当下」记录工具。
 
 ## 项目简介

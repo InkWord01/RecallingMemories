@@ -1,0 +1,55 @@
+name: Bug 反馈
+description: 报告一个使用中遇到的问题
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么
+      description: 描述你看到的现象（越具体越好）
+      placeholder: 比如「点击保存后 App 闪退」
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 如何让这个问题再次出现
+      placeholder: |
+        1. 打开拾忆
+        2. 点击记录
+        3. ……
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为
+
+  - type: input
+    id: ios-version
+    attributes:
+      label: iOS 版本
+      placeholder: 17.5
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: 设备型号
+      placeholder: iPhone 15 Pro
+
+  - type: input
+    id: app-version
+    attributes:
+      label: 拾忆版本号
+      placeholder: 0.1.0
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: 补充信息（可选）
+      description: 截图 / 日志 / 任何相关线索

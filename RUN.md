@@ -187,6 +187,14 @@ xcodebuild test \
 
 > 测试用 `TestFactory.makeContainer()` 拉起一个 in-memory `ModelContainer`，每个用例隔离，不污染本地 SwiftData 数据库。
 
+### CI 自动跑
+
+`.github/workflows/ci.yml` 在每次 `push` / `pull_request` 时：
+1. **lint job** (Ubuntu，免费) — 校验 `project.yml` YAML 语法、`tools/*.sh` shellcheck、`design/*.svg` xmllint
+2. **build-and-test job** (macOS-14) — `xcodegen` → 编译 + 跑测试 → 失败时上传 `TestResults.xcresult` 与 JUnit 报告
+
+PR 模板与 Issue 模板见 `.github/`。
+
 ---
 
 ## 8. TestFlight 发布
