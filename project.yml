@@ -15,6 +15,9 @@ settings:
     DEVELOPMENT_TEAM: "" # 填入开发者 Team ID
     CODE_SIGN_STYLE: Automatic
     ENABLE_PREVIEWS: YES
+    # 版本集中管理 —— 改这里，主 App / Widget 一起更新
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
 
 targets:
   RecallingMemories:
@@ -30,8 +33,8 @@ targets:
       path: RecallingMemories/Resources/Info.plist
       properties:
         CFBundleDisplayName: 拾忆
-        CFBundleShortVersionString: "0.1.0"
-        CFBundleVersion: "1"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen:
           UIColorName: LaunchBackground
           UIImageName: LaunchLogo
@@ -93,8 +96,8 @@ targets:
       path: RecallingMemoriesWidget/Info.plist
       properties:
         CFBundleDisplayName: 拾忆
-        CFBundleShortVersionString: "0.1.0"
-        CFBundleVersion: "1"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
     entitlements:
       path: RecallingMemoriesWidget/RecallingMemoriesWidget.entitlements
       properties:

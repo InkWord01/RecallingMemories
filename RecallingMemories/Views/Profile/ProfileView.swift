@@ -84,6 +84,11 @@ struct ProfileView: View {
 
                 Section("关于") {
                     NavigationLink {
+                        UserManualView()
+                    } label: {
+                        Label("操作手册", systemImage: "book.fill")
+                    }
+                    NavigationLink {
                         HelpCenterView()
                     } label: {
                         Label("帮助中心", systemImage: "questionmark.bubble.fill")
@@ -103,10 +108,17 @@ struct ProfileView: View {
                     } label: {
                         Label("第三方致谢", systemImage: "heart.text.square")
                     }
+                    NavigationLink {
+                        AboutView()
+                    } label: {
+                        Label("关于拾忆", systemImage: "info.circle.fill")
+                    }
                     HStack {
                         Text("版本")
                         Spacer()
-                        Text("0.1.0").foregroundStyle(.secondary)
+                        Text(AppInfo.fullVersion)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
                     }
                     Button {
                         OnboardingService.shared.reset()

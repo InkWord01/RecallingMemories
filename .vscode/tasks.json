@@ -1,0 +1,67 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🔍 校验仓库一致性 (verify.sh)",
+      "type": "shell",
+      "command": "bash tools/verify.sh",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "📊 提交统计",
+      "type": "shell",
+      "command": "echo \"提交数: $(git log --oneline | wc -l)\"; echo \"Swift 文件: $(find RecallingMemories RecallingMemoriesWidget RecallingMemoriesTests -name '*.swift' 2>/dev/null | wc -l)\"; echo \"测试用例: $(grep -rh 'func test' RecallingMemoriesTests --include='*.swift' | wc -l)\"; echo \"\"; echo '最近 5 条提交:'; git log --oneline -5",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "🆙 Bump 版本号 (patch)",
+      "type": "shell",
+      "command": "bash tools/bump-version.sh patch",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
+    {
+      "label": "🆙 Bump 版本号 (minor)",
+      "type": "shell",
+      "command": "bash tools/bump-version.sh minor",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
+    {
+      "label": "🆙 Bump 版本号 (build only)",
+      "type": "shell",
+      "command": "bash tools/bump-version.sh build",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    }
+  ]
+}
