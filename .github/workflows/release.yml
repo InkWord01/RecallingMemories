@@ -31,15 +31,29 @@ concurrency:
 
 jobs:
   build-ipa:
-    runs-on: macos-14
+    runs-on: macos-15   # 升级到 macos-15，确保预装 Xcode 16
     timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Select Xcode
+        # 用 runner 上预装的最新 Xcode（优先 16，回退 15）
+        # XcodeGen 新版生成的 pbxproj 格式 v77 需要 Xcode 16+ 才能解析
         run: |
-          sudo xcode-select -s "$(ls -d /Applications/Xcode_15*.app | sort -V | tail -1)"
+          AVAILABLE=""
+          for dir in /Applications/Xcode_16*.app /Applications/Xcode_15*.app; do
+            if compgen -G "$dir" > /dev/null; then
+              AVAILABLE=$(ls -d $dir 2>/dev/null | sort -V | tail -1)
+              [ -n "$AVAILABLE" ] && break
+            fi
+          done
+          if [ -z "$AVAILABLE" ]; then
+            echo "::error::未找到任何 Xcode"
+            exit 1
+          fi
+          echo "Selected: $AVAILABLE"
+          sudo xcode-select -s "$AVAILABLE"
           xcodebuild -version
 
       - name: Install dependencies
