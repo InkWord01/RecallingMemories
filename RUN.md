@@ -40,7 +40,12 @@ git reset --hard
 仓库**不提交 `.xcodeproj`**，由 [XcodeGen](https://github.com/yonaskolb/XcodeGen) 从 `project.yml` 生成。
 
 ```bash
-brew install xcodegen
+brew install xcodegen librsvg
+
+# 把 design/*.svg 渲染成 Asset Catalog 需要的 PNG/PDF
+bash tools/generate-icons.sh
+
+# 生成 .xcodeproj
 xcodegen generate
 open RecallingMemories.xcodeproj
 ```
@@ -48,6 +53,8 @@ open RecallingMemories.xcodeproj
 生成的工程包含 2 个 target：
 - `RecallingMemories` — 主 App
 - `RecallingMemoriesWidget` — 桌面小组件
+
+> 仓库出于跨平台原因不提交 PNG/PDF，矢量源在 `design/`。修改图标后重跑 `tools/generate-icons.sh` 即可。
 
 ---
 

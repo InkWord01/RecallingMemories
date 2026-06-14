@@ -66,3 +66,8 @@ Desktop.ini
 
 # 日志
 *.log
+
+# Asset Catalog 生成产物（macOS 端 tools/generate-icons.sh 产生，矢量源在 design/）
+RecallingMemories/Resources/Assets.xcassets/AppIcon.appiconset/*.png
+RecallingMemories/Resources/Assets.xcassets/LaunchLogo.imageset/*.pdf
+RecallingMemories/Resources/Assets.xcassets/LaunchLogo.imageset/*.png
