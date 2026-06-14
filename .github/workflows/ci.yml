@@ -25,14 +25,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install lint deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck libxml2-utils python3-yaml
+
       - name: Validate project.yml syntax
         run: |
           python3 -c "import yaml; yaml.safe_load(open('project.yml'))"
 
       - name: Shellcheck tools/
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq shellcheck
           find tools -name '*.sh' -print0 | xargs -0 shellcheck
 
       - name: Verify SVG well-formed
