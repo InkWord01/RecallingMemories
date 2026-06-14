@@ -29,6 +29,11 @@ struct ProfileView: View {
                     } label: {
                         Label("通知与推送", systemImage: "bell.badge")
                     }
+                    NavigationLink {
+                        PeopleManagementView()
+                    } label: {
+                        Label("人物管理", systemImage: "person.2.crop.square.stack")
+                    }
                 }
 
                 Section("数据") {
