@@ -1,0 +1,28 @@
+# 强制所有文本类文件用 LF 行尾（含 Windows 端 commit 时不再触发 CRLF 警告）
+* text=auto eol=lf
+
+# 二进制不做行尾转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
+*.mov binary
+*.mp4 binary
+*.zip binary
+*.xcassets/**/*.png binary
+*.xcassets/**/*.pdf binary
+
+# Xcode 工程类文件 — 由 XcodeGen 生成，不做处理
+*.pbxproj merge=union
+*.xcscheme text eol=lf
+
+# Swift / 文档统一 LF
+*.swift text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+*.plist text eol=lf
+*.svg   text eol=lf
+*.sh    text eol=lf
+*.entitlements text eol=lf
