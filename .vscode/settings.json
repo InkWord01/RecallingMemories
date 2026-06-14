@@ -1,0 +1,29 @@
+{
+  "files.associations": {
+    "*.swift": "swift",
+    "Package.swift": "swift"
+  },
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/.build": true,
+    "**/.swiftpm": true,
+    "**/DerivedData": true,
+    "**/xcuserdata": true
+  },
+  "swift.path": "",
+  "swift.disableAutoResolve": false,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.formatOnSave": true,
+  "editor.rulers": [120],
+  "[swift]": {
+    "editor.defaultFormatter": "sswg.swift-lang",
+    "editor.tabSize": 4
+  },
+  "[markdown]": {
+    "editor.tabSize": 2,
+    "editor.wordWrap": "on"
+  },
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true
+}

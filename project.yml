@@ -1,0 +1,57 @@
+# XcodeGen 工程描述文件 — 在 Mac 上执行 `xcodegen generate` 即可生成 .xcodeproj
+# 详情：https://github.com/yonaskolb/XcodeGen
+
+name: RecallingMemories
+options:
+  bundleIdPrefix: com.recallingmemories
+  deploymentTarget:
+    iOS: "16.0"
+  developmentLanguage: zh-Hans
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: "" # 填入开发者 Team ID
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_PREVIEWS: YES
+
+targets:
+  RecallingMemories:
+    type: application
+    platform: iOS
+    sources:
+      - path: RecallingMemories
+        excludes:
+          - "**/*.md"
+    resources:
+      - RecallingMemories/Resources
+    info:
+      path: RecallingMemories/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: 拾忆
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        NSLocationWhenInUseUsageDescription: 拾忆需要获取你的位置，用于记录此刻的足迹与场景。
+        NSLocationAlwaysAndWhenInUseUsageDescription: 拾忆需要后台位置权限，用于自动记录你的时空轨迹。
+        NSCameraUsageDescription: 拾忆需要相机权限，用于拍摄此刻的画面。
+        NSPhotoLibraryUsageDescription: 拾忆需要访问相册，用于挂载已有的照片与视频。
+        NSPhotoLibraryAddUsageDescription: 拾忆需要保存生成的分享卡片到相册。
+        NSMicrophoneUsageDescription: 拾忆需要麦克风权限，用于录制视频与语音转文字。
+        NSSpeechRecognitionUsageDescription: 拾忆需要语音识别权限，将你的语音快速转为文字。
+        NSContactsUsageDescription: 拾忆需要通讯录权限，用于添加「和谁在一起」标签。
+        LSApplicationQueriesSchemes:
+          - weixin
+          - weixinULAPI
+          - weixinURLParamsAPI
+        CFBundleURLTypes:
+          - CFBundleURLSchemes:
+              - wxYOUR_WECHAT_APP_ID # 微信开放平台分配的 AppID
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.recallingmemories.app
+        TARGETED_DEVICE_FAMILY: "1" # iPhone Only
+        SUPPORTS_MACCATALYST: NO
