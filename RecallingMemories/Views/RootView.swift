@@ -51,7 +51,7 @@ struct RootView: View {
             pendingMemory = allMemories.first { $0.id == id }
             router.pendingMemoryID = nil
         }
-        // 引导刚完成时，若有挂起的路由请求，再处理一次
+        // 引导刚完成时，若有挂起的路由请求，再处理一次；并触发记录页重新聚焦输入框
         .onChange(of: onboarding.needsToShow) { _, needsToShow in
             guard !needsToShow else { return }
             if let requested = router.requestedTab {
@@ -61,6 +61,10 @@ struct RootView: View {
             if let id = router.pendingMemoryID {
                 pendingMemory = allMemories.first { $0.id == id }
                 router.pendingMemoryID = nil
+            }
+            // 引导关闭后，RecordView 不会再次 onAppear；主动触发 focus + 时空锚点捕获
+            if selectedTab == .record {
+                router.requestQuickRecordFocus = true
             }
         }
         .onOpenURL { url in

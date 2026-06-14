@@ -117,3 +117,21 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.recallingmemories.app.tests
         BUNDLE_LOADER: $(TEST_HOST)
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/RecallingMemories.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RecallingMemories
+
+# Scheme 显式声明 —— 让 RecallingMemoriesTests 出现在主 App scheme 的 Test action 里，
+# 否则 `xcodebuild test -scheme RecallingMemories` 不会跑测试。
+schemes:
+  RecallingMemories:
+    build:
+      targets:
+        RecallingMemories: all
+        RecallingMemoriesWidget: all
+        RecallingMemoriesTests: [test]
+    test:
+      gatherCoverageData: true
+      targets:
+        - RecallingMemoriesTests
+    run:
+      config: Debug
+    archive:
+      config: Release

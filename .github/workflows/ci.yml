@@ -70,13 +70,37 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
+      # 选一个真实存在的 iPhone 模拟器名（runner 上的 Xcode 不同版本预装机型不同）
+      - name: Pick simulator
+        id: sim
+        run: |
+          NAME=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)
+          # 优先 iPhone 16 Pro / 15 / 16；按优先级回退
+          targets = ["iPhone 16 Pro", "iPhone 15 Pro", "iPhone 16", "iPhone 15", "iPhone 14"]
+          for runtime, devices in data["devices"].items():
+              if "iOS" not in runtime: continue
+              for d in devices:
+                  if d.get("isAvailable") and d["name"] in targets:
+                      print(d["name"]); sys.exit(0)
+          # 兜底：取第一个可用 iPhone
+          for runtime, devices in data["devices"].items():
+              if "iOS" not in runtime: continue
+              for d in devices:
+                  if d.get("isAvailable") and d["name"].startswith("iPhone"):
+                      print(d["name"]); sys.exit(0)
+          ')
+          echo "Picked simulator: $NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
       # 构建主 App（不签名，CI 没有 provisioning profile）
       - name: Build app
         run: |
           xcodebuild build \
             -project RecallingMemories.xcodeproj \
             -scheme RecallingMemories \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
@@ -90,7 +114,7 @@ jobs:
           xcodebuild test \
             -project RecallingMemories.xcodeproj \
             -scheme RecallingMemories \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
             -configuration Debug \
             -resultBundlePath TestResults.xcresult \
             CODE_SIGN_IDENTITY="" \
