@@ -24,3 +24,5 @@ final class Person {
         self.avatarPath = avatarPath
     }
 }
+
+extension Person: Identifiable {}

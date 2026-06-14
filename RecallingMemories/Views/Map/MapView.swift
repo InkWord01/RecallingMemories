@@ -62,9 +62,6 @@ struct MapView: View {
                     coordinate: cluster.coordinate
                 ) {
                     ClusterPin(count: cluster.memories.count, isSelected: selectedCluster?.id == cluster.id)
-                        .onTapGesture {
-                            selectedCluster = cluster
-                        }
                 }
                 .tag(cluster.id)
             }
@@ -247,5 +244,5 @@ private struct ClusterMemoryRow: View {
 
 #Preview {
     MapView()
-        .modelContainer(for: Memory.self, inMemory: true)
+        .modelContainer(for: [Memory.self, Person.self], inMemory: true)
 }

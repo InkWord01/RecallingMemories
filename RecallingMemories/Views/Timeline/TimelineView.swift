@@ -233,5 +233,5 @@ private struct AsyncThumbnailView: View {
 
 #Preview {
     TimelineView()
-        .modelContainer(for: Memory.self, inMemory: true)
+        .modelContainer(for: [Memory.self, Person.self], inMemory: true)
 }

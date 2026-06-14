@@ -120,5 +120,5 @@ private struct OnThisDayRow: View {
 
 #Preview {
     NavigationStack { OnThisDayView() }
-        .modelContainer(for: Memory.self, inMemory: true)
+        .modelContainer(for: [Memory.self, Person.self], inMemory: true)
 }

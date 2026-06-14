@@ -5,7 +5,7 @@ name: RecallingMemories
 options:
   bundleIdPrefix: com.recallingmemories
   deploymentTarget:
-    iOS: "16.0"
+    iOS: "17.0"
   developmentLanguage: zh-Hans
   createIntermediateGroups: true
 

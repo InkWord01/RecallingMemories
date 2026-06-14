@@ -12,7 +12,7 @@
 
 - **语言**：Swift 5.9+
 - **UI 框架**：SwiftUI + UIKit（混编）
-- **最低系统**：iOS 16.0+
+- **最低系统**：iOS 17.0+
 - **持久化**：SwiftData
 - **定位**：CoreLocation + 高德地图 SDK
 - **地图**：MapKit

@@ -11,7 +11,7 @@
 ## 技术约束
 
 - Swift 5.9+，SwiftUI + UIKit 混编
-- 最低 iOS 16.0
+- 最低 iOS 17.0（依赖 SwiftData / 新 Map API / `onChange(of:_:)` 双值闭包等 iOS 17+ 能力）
 - SwiftData 本地持久化（MVP 阶段不上云）
 - 微信开放平台 SDK 用于登录与分享
 - 高德地图 SDK 用于国内 POI（CoreLocation 补充）

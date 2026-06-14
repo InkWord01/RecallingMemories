@@ -64,6 +64,9 @@ final class Memory {
     }
 }
 
+// SwiftData @Model 不自动 conform Identifiable；显式 conform 让 SwiftUI ForEach / sheet(item:) 直接接受
+extension Memory: Identifiable {}
+
 /// 媒体附件
 struct Attachment: Codable, Hashable, Identifiable {
     var id: UUID = UUID()

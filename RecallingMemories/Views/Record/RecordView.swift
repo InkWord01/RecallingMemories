@@ -34,10 +34,17 @@ struct RecordView: View {
             .onChange(of: viewModel.pickerItems) { _, _ in
                 Task { await viewModel.handlePickerChange() }
             }
-            .alert("提示", isPresented: .constant(viewModel.errorMessage != nil)) {
+            .alert(
+                "提示",
+                isPresented: Binding(
+                    get: { viewModel.errorMessage != nil },
+                    set: { if !$0 { viewModel.errorMessage = nil } }
+                ),
+                presenting: viewModel.errorMessage
+            ) { _ in
                 Button("好") { viewModel.errorMessage = nil }
-            } message: {
-                Text(viewModel.errorMessage ?? "")
+            } message: { message in
+                Text(message)
             }
             .sheet(isPresented: $showPeoplePicker) {
                 PeoplePickerView(selected: $viewModel.selectedPeople)
@@ -243,5 +250,5 @@ private struct AsyncThumbnailView: View {
 
 #Preview {
     RecordView()
-        .modelContainer(for: Memory.self, inMemory: true)
+        .modelContainer(for: [Memory.self, Person.self], inMemory: true)
 }
