@@ -84,6 +84,11 @@ struct ProfileView: View {
 
                 Section("关于") {
                     NavigationLink {
+                        HelpCenterView()
+                    } label: {
+                        Label("帮助中心", systemImage: "questionmark.bubble.fill")
+                    }
+                    NavigationLink {
                         LegalDocumentView(document: LegalDocuments.privacy)
                     } label: {
                         Label("隐私协议", systemImage: "hand.raised.fill")
