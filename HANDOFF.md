@@ -35,7 +35,7 @@
 | Git 提交 | 30 |
 | Swift 源码文件 | 55（主 App 39 + Widget 4 + Tests 5 + Shared 2 + 余 5） |
 | 单元测试用例 | 33+（4 个纯函数模块 + Mood 工具） |
-| Markdown 文档 | 8（含 init.txt 产品文档） |
+| Markdown 文档 | 9（含 init.txt 产品文档） |
 | Targets | 3（主 App / Widget / Tests） |
 
 ### 完成度
@@ -119,6 +119,7 @@ tools/
 
 docs/
 ├── build-errors.md                 首次构建 12 + 5 + 5 个错误清单
+├── design-guide.md                 设计风格指南（视觉语言规范）
 └── wechat-integration.md           微信 SDK macOS 端集成指南
 
 .github/
@@ -300,7 +301,7 @@ docs/
 
 ---
 
-## 致后续接手者
+### 致后续接手者
 
 这份仓库的设计目标是让你**能在 5 分钟内 build 通**、**在 1 小时内理解整体架构**、**在 1 天内上手做改动**。
 
@@ -308,6 +309,7 @@ docs/
 1. 改 `RUN.md` 或 `docs/build-errors.md` 让别人不踩同样的坑
 2. 改 `CLAUDE.md` 让 AI 协作工具有更准的上下文
 3. 改这份 `HANDOFF.md` 让下下一个接手者更顺利
+4. 改 `docs/design-guide.md` 让视觉规范跟上业务变化
 
 仓库每次有破坏性变更，记得回到这个清单里更新对应章节。
 
