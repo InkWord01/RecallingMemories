@@ -74,6 +74,13 @@ else
   echo "  ⚠ 未装 xmllint，跳过 SVG 校验"
 fi
 
+# AppIcon viewBox sanity check —— 必须 1024×1024
+if grep -qE 'viewBox="0 0 1024 1024"' design/AppIcon.svg 2>/dev/null; then
+  ok "AppIcon viewBox 为 1024×1024"
+else
+  fail "AppIcon viewBox 不是 1024×1024（iOS 17+ AppIconSet 要求）"
+fi
+
 echo ""
 echo "▸ 校验 shell 脚本"
 if command -v shellcheck >/dev/null 2>&1; then

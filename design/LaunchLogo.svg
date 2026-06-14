@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  启动屏中央 logo — 单色版本，可叠加在任意背景色上
-  尺寸 240×240（@1x），LaunchScreen.storyboard 通过 PDF 矢量自适应
+  启动屏中央 logo —— 单色版本
+  形态与 AppIcon 主星一致（曲率/比例），保证启动屏到引导页的视觉连贯
+  尺寸 240×240（@1x），由 LaunchScreen 通过 PDF 矢量自适应缩放
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
-  <g transform="translate(120, 120)">
+  <g transform="translate(120 120)">
     <path
-      d="M 0,-80
-         C 9,-34 9,-34 43,-18
-         C 78,-9 78,-9 43,9
-         C 9,18 9,18 0,65
-         C -9,18 -9,18 -43,9
-         C -78,-9 -78,-9 -43,-18
-         C -9,-34 -9,-34 0,-80 Z"
+      d="M 0,-90
+         C 13,-23 23,-13 90,0
+         C 23,13 13,23 0,90
+         C -13,23 -23,13 -90,0
+         C -23,-13 -13,-23 0,-90 Z"
       fill="#FFFFFF"/>
   </g>
 </svg>

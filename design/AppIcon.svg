@@ -1,74 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  拾忆 App 图标 — 1024×1024 矢量源
-  视觉：暖色系渐变背景 + 主星 + 两颗副星，与首屏引导第一页配色呼应
+  拾忆 App 图标 v2 — 1024×1024 矢量源
+
+  设计语义：
+    - 主星：「此刻」捕捉的瞬间
+    - 副星：「那年今日」的回响
+    - 三段渐变（暖桃 → 玫瑰粉 → 深紫）：一日时光的流动
+
+  色板对齐：
+    - 顶部 #FFC4DC 与 AccentColor #FFA0D8 同系（暖粉）
+    - 底部 #3A2868 与 LaunchBackground #5B3A5A 同调（深紫）
+
+  视觉规范：
+    - 主体置于光学中心 y=470（46%）
+    - 主星外径 280px，离边 230px（安全于 iOS 圆角 mask 的 224px 半径）
+    - 仅保留 2 颗星，缩小到 60×60 仍能辨识双星
+
   导出：在 macOS 上执行 `tools/generate-icons.sh` 生成 PNG
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFD27A"/>
-      <stop offset="45%" stop-color="#E8A0C8"/>
-      <stop offset="100%" stop-color="#5B3A8C"/>
+    <!-- 主背景：从顶部暖桃到底部深紫，模拟一日光线流转 -->
+    <linearGradient id="bg" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#FFC4DC"/>
+      <stop offset="35%"  stop-color="#E89BC0"/>
+      <stop offset="70%"  stop-color="#7A4F9C"/>
+      <stop offset="100%" stop-color="#3A2868"/>
     </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="48%" r="55%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35"/>
-      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0.05"/>
+
+    <!-- 中心辉光：径向白光，让主星周围"亮起来" -->
+    <radialGradient id="centerGlow" cx="50%" cy="46%" r="42%">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.40"/>
+      <stop offset="50%"  stop-color="#FFFFFF" stop-opacity="0.10"/>
       <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
     </radialGradient>
-    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3"/>
-    </filter>
+
+    <!-- 主星本体：从纯白到极浅粉，给图形微妙的光泽感 -->
+    <linearGradient id="starBody" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F8E5F0"/>
+    </linearGradient>
+
+    <!-- 主星柔光：放在主星下方，让它"漂浮"在背景上 -->
+    <radialGradient id="starHalo" cx="50%" cy="50%" r="60%">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
   </defs>
 
   <!-- 背景 -->
   <rect width="1024" height="1024" fill="url(#bg)"/>
-  <ellipse cx="512" cy="490" rx="380" ry="380" fill="url(#glow)"/>
 
-  <!-- 主星：四角星，类 sparkles 形态 -->
-  <g transform="translate(512, 500)">
+  <!-- 中心辉光 -->
+  <ellipse cx="512" cy="470" rx="420" ry="420" fill="url(#centerGlow)"/>
+
+  <!-- ───── 主星 ───── -->
+  <!-- 用径向 halo 衬底，让主星不像直接贴在背景上 -->
+  <ellipse cx="512" cy="470" rx="320" ry="320" fill="url(#starHalo)"/>
+
+  <!-- 主星：四角星 sparkle 形态，外径 280，内径控制曲线弯度 -->
+  <g transform="translate(512 470)">
     <path
-      d="M 0,-260
-         C 28,-110 28,-110 140,-58
-         C 252,-28 252,-28 140,28
-         C 28,58 28,58 0,210
-         C -28,58 -28,58 -140,28
-         C -252,-28 -252,-28 -140,-58
-         C -28,-110 -28,-110 0,-260 Z"
-      fill="#FFFFFF"
-      filter="url(#soft)"
-      opacity="0.96"/>
+      d="M 0,-280
+         C 42,-72 72,-42 280,0
+         C 72,42 42,72 0,280
+         C -42,72 -72,42 -280,0
+         C -72,-42 -42,-72 0,-280 Z"
+      fill="url(#starBody)"/>
   </g>
 
-  <!-- 右上副星 -->
-  <g transform="translate(770, 290) scale(0.42)" opacity="0.88">
+  <!-- ───── 副星：右上方 ───── -->
+  <!-- 「那年今日」的回响，比主星小一半，半透明 -->
+  <g transform="translate(800 268)" opacity="0.78">
     <path
-      d="M 0,-130
-         C 14,-50 14,-50 70,-28
-         C 130,-14 130,-14 70,14
-         C 14,28 14,28 0,110
-         C -14,28 -14,28 -70,14
-         C -130,-14 -130,-14 -70,-28
-         C -14,-50 -14,-50 0,-130 Z"
+      d="M 0,-110
+         C 17,-28 28,-17 110,0
+         C 28,17 17,28 0,110
+         C -17,28 -28,17 -110,0
+         C -28,-17 -17,-28 0,-110 Z"
       fill="#FFFFFF"/>
   </g>
 
-  <!-- 左下副星 -->
-  <g transform="translate(260, 700) scale(0.32)" opacity="0.75">
-    <path
-      d="M 0,-130
-         C 14,-50 14,-50 70,-28
-         C 130,-14 130,-14 70,14
-         C 14,28 14,28 0,110
-         C -14,28 -14,28 -70,14
-         C -130,-14 -130,-14 -70,-28
-         C -14,-50 -14,-50 0,-130 Z"
-      fill="#FFFFFF"/>
-  </g>
-
-  <!-- 微光粒子 -->
-  <circle cx="180" cy="220" r="6" fill="#FFFFFF" opacity="0.6"/>
-  <circle cx="860" cy="180" r="4" fill="#FFFFFF" opacity="0.5"/>
-  <circle cx="850" cy="780" r="5" fill="#FFFFFF" opacity="0.55"/>
-  <circle cx="160" cy="850" r="3" fill="#FFFFFF" opacity="0.45"/>
+  <!-- ───── 极小高光：主星上方，强化"星芒"质感 ───── -->
+  <circle cx="512" cy="220" r="6" fill="#FFFFFF" opacity="0.85"/>
+  <circle cx="512" cy="200" r="3" fill="#FFFFFF" opacity="0.6"/>
 </svg>
