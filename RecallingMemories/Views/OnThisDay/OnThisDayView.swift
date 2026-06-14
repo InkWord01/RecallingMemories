@@ -19,10 +19,11 @@ struct OnThisDayView: View {
     var body: some View {
         Group {
             if todayMatches.isEmpty {
-                ContentUnavailableView(
-                    "今天还没有那年今日",
-                    systemImage: "calendar.badge.clock",
-                    description: Text("一年后再来这里，会看到今天留下的痕迹。")
+                EmptyStateView(
+                    icon: "calendar.badge.clock",
+                    title: "今天还没有那年今日",
+                    message: "一年后再来这里，会看到今天留下的痕迹。",
+                    secondaryHint: "可在「我的 → 通知与推送」开启每日提醒"
                 )
             } else {
                 List {

@@ -24,10 +24,14 @@ struct MapView: View {
         NavigationStack {
             ZStack(alignment: .top) {
                 if clusters.isEmpty {
-                    ContentUnavailableView(
-                        "还没有足迹",
-                        systemImage: "map",
-                        description: Text("开启定位记录，就能在这里看到你的旅程。")
+                    EmptyStateView(
+                        icon: "map",
+                        title: "还没有足迹",
+                        message: "记录时给个定位，这里就会浮出旅程的地图。",
+                        primaryAction: ("去记录此刻", {
+                            AppRouter.shared.requestedTab = .record
+                        }),
+                        secondaryHint: "已记录但没定位？检查系统设置中的位置权限"
                     )
                 } else {
                     mapContent

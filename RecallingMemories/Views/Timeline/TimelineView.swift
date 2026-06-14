@@ -20,10 +20,14 @@ struct TimelineView: View {
         NavigationStack {
             Group {
                 if memories.isEmpty {
-                    ContentUnavailableView(
-                        "还没有记忆",
-                        systemImage: "sparkles",
-                        description: Text("记录此刻，让一瞬间留下痕迹。")
+                    EmptyStateView(
+                        icon: "sparkles",
+                        title: "还没有记忆",
+                        message: "把第一个想法、第一张照片、第一个地点留下来。",
+                        primaryAction: ("去记录此刻", {
+                            AppRouter.shared.requestedTab = .record
+                        }),
+                        secondaryHint: "在「记录」页随手写一句也行"
                     )
                 } else {
                     timelineList

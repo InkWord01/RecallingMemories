@@ -90,6 +90,11 @@ struct ProfileView: View {
                         Spacer()
                         Text("0.1.0").foregroundStyle(.secondary)
                     }
+                    Button {
+                        OnboardingService.shared.reset()
+                    } label: {
+                        Label("重新查看引导", systemImage: "questionmark.circle")
+                    }
                 }
             }
             .navigationTitle("我的")

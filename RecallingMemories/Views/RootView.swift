@@ -10,6 +10,7 @@ import SwiftData
 
 struct RootView: View {
     @ObservedObject private var router = AppRouter.shared
+    @ObservedObject private var onboarding = OnboardingService.shared
     @Query(sort: \Memory.createdAt, order: .reverse) private var allMemories: [Memory]
 
     @State private var selectedTab: Tab = .record
@@ -62,6 +63,12 @@ struct RootView: View {
         .sheet(item: $pendingMemory) { memory in
             MemoryDetailView(memory: memory)
                 .presentationDetents([.medium, .large])
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { onboarding.needsToShow },
+            set: { if !$0 { onboarding.markCompleted() } }
+        )) {
+            OnboardingView(onFinish: { onboarding.markCompleted() })
         }
     }
 }
