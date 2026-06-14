@@ -143,8 +143,12 @@ struct ShareComposerView: View {
                     .padding(4)
                     .background(Color.orange, in: Circle())
                     .offset(x: 6, y: -6)
+                    .accessibilityHidden(true)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(template.displayName + (template.isPro ? "（敬请期待）" : ""))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     // MARK: - 操作栏

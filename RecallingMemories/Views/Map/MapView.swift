@@ -47,6 +47,7 @@ struct MapView: View {
                         } label: {
                             Image(systemName: "scope")
                         }
+                        .accessibilityLabel("聚焦所有足迹")
                     }
                 }
             }
@@ -66,6 +67,9 @@ struct MapView: View {
                     coordinate: cluster.coordinate
                 ) {
                     ClusterPin(count: cluster.memories.count, isSelected: selectedCluster?.id == cluster.id)
+                        .accessibilityElement()
+                        .accessibilityLabel("\(cluster.title)，\(cluster.memories.count) 条记忆")
+                        .accessibilityAddTraits(.isButton)
                 }
                 .tag(cluster.id)
             }

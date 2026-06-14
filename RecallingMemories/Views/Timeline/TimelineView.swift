@@ -42,6 +42,7 @@ struct TimelineView: View {
                         } label: {
                             Image(systemName: "magnifyingglass")
                         }
+                        .accessibilityLabel("搜索记忆")
                     }
                 }
             }
@@ -73,6 +74,9 @@ struct TimelineView: View {
                         .buttonStyle(.plain)
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel(rowAccessibilityLabel(for: memory))
+                        .accessibilityHint("双击查看详情")
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 delete(memory)
@@ -121,6 +125,34 @@ struct TimelineView: View {
         try? modelContext.save()
         // 通知 Widget 刷新
         WidgetSnapshotPublisher.publish(modelContainer: modelContext.container)
+    }
+
+    /// 把一条记忆压成 VoiceOver 可读的一句话
+    private func rowAccessibilityLabel(for memory: Memory) -> String {
+        var parts: [String] = []
+        let timeFormatter = DateFormatter()
+        timeFormatter.locale = Locale(identifier: "zh_CN")
+        timeFormatter.dateFormat = "HH:mm"
+        parts.append(timeFormatter.string(from: memory.createdAt))
+
+        if let mood = memory.moodTag {
+            parts.append(Mood.accessibilityLabel(for: mood))
+        }
+        if !memory.text.isEmpty {
+            // 截取前 80 字，避免读屏过长
+            let preview = memory.text.prefix(80)
+            parts.append(String(preview))
+        }
+        if let location = memory.locationName {
+            parts.append("位置 \(location)")
+        }
+        if !memory.people.isEmpty {
+            parts.append("和 \(memory.people.map(\.name).joined(separator: "、"))")
+        }
+        if !memory.attachments.isEmpty {
+            parts.append("含 \(memory.attachments.count) 个附件")
+        }
+        return parts.joined(separator: "，")
     }
 }
 
@@ -215,6 +247,8 @@ private struct ThumbnailGrid: View {
                     }
             }
         }
+        // 整组缩略图整体上由 row label 已说明附件数，这里不再重复读
+        .accessibilityHidden(true)
     }
 }
 

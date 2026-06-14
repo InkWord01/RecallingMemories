@@ -11,6 +11,7 @@ import SwiftData
 
 struct RecordView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var viewModel = RecordViewModel()
     @ObservedObject private var router = AppRouter.shared
 
@@ -73,8 +74,8 @@ struct RecordView: View {
 
                 if viewModel.draftText.isEmpty {
                     HStack(spacing: 6) {
-                        if viewModel.isRecording {
-                            // 红色呼吸圆点 — 让「聆听中」有生命感
+                        if viewModel.isRecording && !reduceMotion {
+                            // 红色呼吸圆点 — 让「聆听中」有生命感（reduce motion 下隐藏）
                             Circle()
                                 .fill(.red)
                                 .frame(width: 8, height: 8)
@@ -83,6 +84,7 @@ struct RecordView: View {
                                 } animation: { _ in
                                     .easeInOut(duration: 0.7)
                                 }
+                                .accessibilityHidden(true)
                         }
                         Text(viewModel.isRecording ? "聆听中…" : "记录此刻的想法…")
                             .foregroundStyle(.secondary)
@@ -120,6 +122,7 @@ struct RecordView: View {
                         HStack(spacing: 6) {
                             AvatarView(name: person.name, imagePath: person.avatarPath)
                                 .frame(width: 20, height: 20)
+                                .accessibilityHidden(true)
                             Text(person.name)
                                 .font(.caption)
                             Button {
@@ -129,6 +132,7 @@ struct RecordView: View {
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                             }
+                            .accessibilityLabel("移除 \(person.name)")
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
@@ -138,6 +142,7 @@ struct RecordView: View {
                 .padding(.horizontal)
             }
             .frame(height: 40)
+            .accessibilityLabel("已选人物")
         }
     }
 
@@ -153,6 +158,7 @@ struct RecordView: View {
                             AsyncThumbnailView(attachment: attachment)
                                 .frame(width: 72, height: 72)
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .accessibilityLabel(accessibilityLabel(for: attachment))
 
                             Button {
                                 viewModel.removeAttachment(attachment)
@@ -162,12 +168,23 @@ struct RecordView: View {
                                     .background(Circle().fill(.ultraThinMaterial))
                             }
                             .offset(x: 4, y: -4)
+                            .accessibilityLabel("移除附件")
                         }
                     }
                 }
                 .padding(.horizontal)
             }
             .frame(height: 88)
+            .accessibilityLabel("已添加的媒体附件")
+        }
+    }
+
+    private func accessibilityLabel(for attachment: Attachment) -> String {
+        switch attachment.kind {
+        case .photo:     return "照片"
+        case .livePhoto: return "实况照片"
+        case .video:     return "视频"
+        case .audio:     return "音频"
         }
     }
 
@@ -189,11 +206,14 @@ struct RecordView: View {
                                         in: Capsule())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(Mood.accessibilityLabel(for: mood))
+                    .accessibilityAddTraits(selected ? .isSelected : [])
                 }
             }
             .padding(.horizontal)
         }
         .frame(height: 36)
+        .accessibilityLabel("情绪标签")
     }
 
     // MARK: - 工具条
@@ -205,13 +225,14 @@ struct RecordView: View {
                     .font(.title3)
                     .frame(width: 36, height: 36)
             }
+            .accessibilityLabel("添加照片或视频")
 
             Button {
                 viewModel.toggleVoiceCapture()
             } label: {
                 ZStack {
-                    if viewModel.isRecording {
-                        // 用 PhaseAnimator 做向外扩散的脉冲（iOS 17+）
+                    if viewModel.isRecording && !reduceMotion {
+                        // 用 PhaseAnimator 做向外扩散的脉冲（iOS 17+，reduce motion 下隐藏）
                         Circle()
                             .stroke(.red.opacity(0.5), lineWidth: 1.5)
                             .frame(width: 36, height: 36)
@@ -222,6 +243,7 @@ struct RecordView: View {
                             } animation: { _ in
                                 .easeOut(duration: 1.2)
                             }
+                            .accessibilityHidden(true)
                     }
                     Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "mic.fill")
                         .font(.title3)
@@ -230,6 +252,8 @@ struct RecordView: View {
                         .contentTransition(.symbolEffect(.replace))
                 }
             }
+            .accessibilityLabel(viewModel.isRecording ? "停止录音" : "开始语音转文字")
+            .accessibilityHint(viewModel.isRecording ? "点击停止录音并把识别结果加入草稿" : "录音时会持续把语音转成文字")
 
             Button {
                 showPeoplePicker = true
@@ -239,6 +263,10 @@ struct RecordView: View {
                     .foregroundStyle(viewModel.selectedPeople.isEmpty ? .primary : .tint)
                     .frame(width: 36, height: 36)
             }
+            .accessibilityLabel("和谁在一起")
+            .accessibilityValue(viewModel.selectedPeople.isEmpty
+                                ? "未选择"
+                                : "已选 \(viewModel.selectedPeople.count) 人")
 
             Spacer()
 
@@ -256,6 +284,7 @@ struct RecordView: View {
                     .animation(.easeInOut(duration: 0.2), value: canSave)
             }
             .disabled(!canSave)
+            .accessibilityHint(canSave ? "保存当前记忆到时光轴" : "需要先输入文字或添加附件")
         }
         .padding()
         .background(.ultraThinMaterial)

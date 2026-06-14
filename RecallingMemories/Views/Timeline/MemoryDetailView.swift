@@ -49,6 +49,7 @@ struct MemoryDetailView: View {
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
+                    .accessibilityLabel("分享这条记忆")
                 }
             }
             .sheet(isPresented: $showShareComposer) {
@@ -72,6 +73,7 @@ struct MemoryDetailView: View {
                     .font(.system(size: 36))
                     .padding(8)
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .accessibilityLabel(Mood.accessibilityLabel(for: mood))
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text(memory.createdAt, format: .dateTime.year().month().day().weekday(.wide))

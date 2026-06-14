@@ -79,6 +79,8 @@ struct OnboardingView: View {
                     }
                 }
                 .padding(.bottom, 24)
+                .accessibilityElement()
+                .accessibilityLabel("第 \(page + 1) 页，共 \(pages.count) 页")
 
                 // 行动按钮
                 Button {
@@ -130,6 +132,7 @@ private struct OnboardingPageView: View {
                     .foregroundStyle(.white)
                     .symbolRenderingMode(.hierarchical)
             }
+            .accessibilityHidden(true)
 
             VStack(spacing: 14) {
                 Text(page.title)
@@ -145,6 +148,8 @@ private struct OnboardingPageView: View {
 
             Spacer()
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(page.title)。\(page.subtitle)")
     }
 }
 
