@@ -4,20 +4,23 @@
 //
 //  核心数据模型 — 一条「记忆」记录
 //
+//  设计约束：所有字段可选 / 有默认值；关系含 inverse；不使用 @Attribute(.unique)
+//  —— 让 SwiftData 既能走纯本地，也能走 CloudKit 同步。
+//
 
 import Foundation
 import SwiftData
 
 @Model
 final class Memory {
-    /// 主键
-    @Attribute(.unique) var id: UUID
+    /// 主键（不再使用 .unique，由调用方保证 UUID 唯一性）
+    var id: UUID = UUID()
 
     /// 文字内容
-    var text: String
+    var text: String = ""
 
     /// 创建时间（精确到秒）
-    var createdAt: Date
+    var createdAt: Date = Date()
 
     /// 位置 — POI 名称（如：星巴克·国贸店）
     var locationName: String?
@@ -30,18 +33,19 @@ final class Memory {
     /// 情绪标签（💡顿悟 / 🔥激动 / 😌平静）
     var moodTag: String?
 
-    /// 关联人物
-    @Relationship(deleteRule: .nullify) var people: [Person] = []
+    /// 关联人物（CloudKit 要求关系含 inverse）
+    @Relationship(deleteRule: .nullify, inverse: \Person.memories)
+    var people: [Person] = []
 
     /// 媒体附件 (照片/视频本地路径或 CloudKit assetID)
-    var attachments: [Attachment]
+    var attachments: [Attachment] = []
 
     /// 自定义标签
-    var tags: [String]
+    var tags: [String] = []
 
     init(
         id: UUID = UUID(),
-        text: String,
+        text: String = "",
         createdAt: Date = Date(),
         locationName: String? = nil,
         latitude: Double? = nil,
@@ -64,7 +68,6 @@ final class Memory {
     }
 }
 
-// SwiftData @Model 不自动 conform Identifiable；显式 conform 让 SwiftUI ForEach / sheet(item:) 直接接受
 extension Memory: Identifiable {}
 
 /// 媒体附件

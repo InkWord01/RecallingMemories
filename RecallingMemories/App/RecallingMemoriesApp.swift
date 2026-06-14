@@ -18,10 +18,7 @@ struct RecallingMemoriesApp: App {
 
     init() {
         do {
-            modelContainer = try ModelContainer(
-                for: Memory.self, Person.self,
-                configurations: ModelConfiguration(isStoredInMemoryOnly: false)
-            )
+            modelContainer = try CloudSyncService.makeModelContainer()
         } catch {
             fatalError("初始化 SwiftData ModelContainer 失败：\(error)")
         }

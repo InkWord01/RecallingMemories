@@ -70,7 +70,11 @@ struct ProfileView: View {
                 }
 
                 Section("数据") {
-                    NavigationLink("云同步设置") { Text("云同步（Pro）") }
+                    NavigationLink {
+                        CloudSyncSettingsView()
+                    } label: {
+                        Label("云同步设置", systemImage: "icloud")
+                    }
                     NavigationLink {
                         ExportView()
                     } label: {
