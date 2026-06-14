@@ -10,6 +10,8 @@ import SwiftUI
 struct MemoryDetailView: View {
     let memory: Memory
 
+    @State private var showShareComposer = false
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -43,11 +45,14 @@ struct MemoryDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // TODO: 调起分享
+                        showShareComposer = true
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
                 }
+            }
+            .sheet(isPresented: $showShareComposer) {
+                ShareComposerView(memory: memory)
             }
         }
     }

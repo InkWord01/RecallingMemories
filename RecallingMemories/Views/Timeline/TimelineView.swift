@@ -14,6 +14,7 @@ struct TimelineView: View {
 
     @State private var selectedMemory: Memory?
     @State private var showSearch = false
+    @State private var sharingMemory: Memory?
 
     var body: some View {
         NavigationStack {
@@ -47,6 +48,9 @@ struct TimelineView: View {
             .sheet(isPresented: $showSearch) {
                 SearchView()
             }
+            .sheet(item: $sharingMemory) { memory in
+                ShareComposerView(memory: memory)
+            }
         }
     }
 
@@ -71,7 +75,7 @@ struct TimelineView: View {
                                 Label("删除", systemImage: "trash")
                             }
                             Button {
-                                // TODO: 唤起分享
+                                sharingMemory = memory
                             } label: {
                                 Label("分享", systemImage: "square.and.arrow.up")
                             }
