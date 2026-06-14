@@ -40,16 +40,28 @@ struct RootView: View {
         }
         .tint(.white)
         // 路由：通知 / 小组件等外部入口
+        // 引导期间挂起路由请求，避免被 fullScreenCover 盖住
         .onChange(of: router.requestedTab) { _, requested in
-            if let requested {
+            guard let requested, !onboarding.needsToShow else { return }
+            selectedTab = requested
+            router.requestedTab = nil
+        }
+        .onChange(of: router.pendingMemoryID) { _, id in
+            guard let id, !onboarding.needsToShow else { return }
+            pendingMemory = allMemories.first { $0.id == id }
+            router.pendingMemoryID = nil
+        }
+        // 引导刚完成时，若有挂起的路由请求，再处理一次
+        .onChange(of: onboarding.needsToShow) { _, needsToShow in
+            guard !needsToShow else { return }
+            if let requested = router.requestedTab {
                 selectedTab = requested
                 router.requestedTab = nil
             }
-        }
-        .onChange(of: router.pendingMemoryID) { _, id in
-            guard let id else { return }
-            pendingMemory = allMemories.first { $0.id == id }
-            router.pendingMemoryID = nil
+            if let id = router.pendingMemoryID {
+                pendingMemory = allMemories.first { $0.id == id }
+                router.pendingMemoryID = nil
+            }
         }
         .onOpenURL { url in
             // 优先尝试微信回调；如未匹配再走应用自定义深链

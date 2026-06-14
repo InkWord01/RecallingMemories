@@ -19,7 +19,7 @@ final class Person {
     /// 头像本地路径
     var avatarPath: String?
 
-    /// 反向关系：包含此人的所有记忆（CloudKit 同步必需）
+    /// 反向关系：包含此人的所有记忆（inverse 在 Memory.people 端声明）
     var memories: [Memory] = []
 
     init(id: UUID = UUID(), name: String = "", contactIdentifier: String? = nil, avatarPath: String? = nil) {
